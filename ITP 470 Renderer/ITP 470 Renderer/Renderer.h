@@ -1,5 +1,5 @@
 #include "FrankLunaCode\d3dApp.h"
-#include "Model.h"
+#include "Mesh.h"
 
 class Renderer : public D3DApp
 {
@@ -13,8 +13,9 @@ public:
 	void DrawScene();
 	void BuildVertexDescription(ID3D11Device* d3dDevice);
 	void BuildEffect(ID3D11Device* d3dDevice);
+	void BuildShaders(ID3D11Device* d3dDevice);
 
-	Model *box;
+	Mesh *box;
 	XMFLOAT4X4 mWorld;
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
@@ -22,5 +23,8 @@ public:
 	ID3DX11EffectTechnique *mTechnique;
 	ID3DX11EffectMatrixVariable *mWorldViewProj;
 	ID3D11InputLayout *mInputLayout;
+	ID3D11VertexShader* colorVS;
+	ID3D11PixelShader* colorPS;
+	ID3D11Buffer* constantBuffer;
 
 };

@@ -1,6 +1,8 @@
 cbuffer cbPerObject
 {
-	float4x4 gWorldViewProj;
+	float4x4 gWorld;
+	float4x4 gView;
+	float4x4 gProj;
 };
 
 struct VertexIn
@@ -9,16 +11,18 @@ struct VertexIn
 	float4 color : COLOR;
 };
 
-struct VertexOut
+struct PixelIn
 {
 	float4 pos : SV_POSITION;
 	float4 color : COLOR;
 };
 
-VertexOut main( VertexIn input ) 
+PixelIn main( VertexIn input ) 
 {
-	VertexOut output;
-	output.pos = mul(float4(input.pos, 1.0), gWorldViewProj);
+	PixelIn output;
+	output.pos = mul(gWorld, float4(input.pos, 1.0));
+	output.pos = mul(gView, output.pos);
+	output.pos = mul(gProj, output.pos);
 	output.color = input.color;
 	return output;
 }
