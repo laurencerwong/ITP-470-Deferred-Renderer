@@ -36,10 +36,10 @@
     <ClCompile Include="FrankLunaCode\MathHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
+    <ClCompile Include="FileReaderWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileReaderWriter.cpp">
+    <ClCompile Include="DrawableObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,10 +65,10 @@
     <ClInclude Include="FrankLunaCode\d3dx11effect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
+    <ClInclude Include="FileReaderWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileReaderWriter.h">
+    <ClInclude Include="DrawableObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -84,5 +84,10 @@
     <CustomBuild Include="Effects\color.fx">
       <Filter>Effect Files</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Debug\temp.fbx">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 #include "FrankLunaCode\d3dApp.h"
-#include "Mesh.h"
+#include "DrawableObject.h"
 
 class Renderer : public D3DApp
 {
@@ -15,7 +15,7 @@ public:
 	void BuildEffect(ID3D11Device* d3dDevice);
 	void BuildShaders(ID3D11Device* d3dDevice);
 
-	Mesh *box;
+	DrawableObject *box;
 	XMFLOAT4X4 mWorld;
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;

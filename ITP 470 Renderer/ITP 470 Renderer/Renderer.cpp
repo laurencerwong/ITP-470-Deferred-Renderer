@@ -25,7 +25,7 @@ Renderer::Renderer(HINSTANCE hInstance)
 	XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
 	XMStoreFloat4x4(&mView, V);
 
-	box = new Mesh();
+	box = new DrawableObject();
 }
 
 Renderer::~Renderer()

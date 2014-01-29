@@ -87,7 +87,7 @@
     <ClCompile Include="FrankLunaCode\GameTimer.cpp" />
     <ClCompile Include="FrankLunaCode\MathHelper.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="DrawableObject.cpp" />
     <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -97,7 +97,7 @@
     <ClInclude Include="FrankLunaCode\d3dx11effect.h" />
     <ClInclude Include="FrankLunaCode\GameTimer.h" />
     <ClInclude Include="FrankLunaCode\MathHelper.h" />
-    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="DrawableObject.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="VertexUtil.h" />
   </ItemGroup>
@@ -115,6 +115,9 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Debug\temp.fbx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
