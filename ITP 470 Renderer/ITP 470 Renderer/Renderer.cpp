@@ -41,7 +41,6 @@ void Renderer::OnResize()
 {
 	D3DApp::OnResize();
 	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
-	//XMMATRIX P = XMMatrixOrthographicLH(800, 600, 0.1, 1000.0);
 	XMStoreFloat4x4(&mProj, P);
 }
 
@@ -77,7 +76,7 @@ void Renderer::DeclareShaderConstants(ID3D11Device* d3dDevice)
 	//declare constant buffer description
 	D3D11_BUFFER_DESC perFrameConstantBufferDesc;
 	perFrameConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	perFrameConstantBufferDesc.ByteWidth = sizeof(perObjectCBStruct);
+	perFrameConstantBufferDesc.ByteWidth = sizeof(perFrameCBStruct);
 	perFrameConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	perFrameConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	perFrameConstantBufferDesc.MiscFlags = 0;

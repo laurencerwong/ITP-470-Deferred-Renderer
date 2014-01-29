@@ -79,10 +79,11 @@
     <FxCompile Include="Effects\colorPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="Effects\color.fx">
+    <FxCompile Include="phongVS.hlsl">
       <Filter>Effect Files</Filter>
-    </CustomBuild>
+    </FxCompile>
+    <FxCompile Include="phongPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
