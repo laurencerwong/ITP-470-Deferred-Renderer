@@ -1,8 +1,12 @@
+cbuffer cbPerFrame
+{
+	float4x4 gView;
+	float4x4 gProj;
+};
+
 cbuffer cbPerObject
 {
 	float4x4 gWorld;
-	float4x4 gView;
-	float4x4 gProj;
 };
 
 struct VertexIn

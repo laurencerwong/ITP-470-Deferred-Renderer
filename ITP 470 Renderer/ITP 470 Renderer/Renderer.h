@@ -1,6 +1,12 @@
 #include "FrankLunaCode\d3dApp.h"
 #include "DrawableObject.h"
 
+struct perFrameCBStruct
+{
+	XMMATRIX mProj;
+	XMMATRIX mView;
+};
+
 class Renderer : public D3DApp
 {
 public:
@@ -11,8 +17,7 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
-	void BuildVertexDescription(ID3D11Device* d3dDevice);
-	void BuildShaders(ID3D11Device* d3dDevice);
+	void DeclareShaderConstants(ID3D11Device* d3dDevice);
 
 	DrawableObject *box;
 	XMFLOAT4X4 mWorld;
@@ -25,5 +30,4 @@ public:
 	ID3D11VertexShader* colorVS;
 	ID3D11PixelShader* colorPS;
 	ID3D11Buffer* constantBuffer;
-
 };
