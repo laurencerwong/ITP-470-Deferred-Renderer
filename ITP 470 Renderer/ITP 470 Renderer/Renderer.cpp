@@ -133,32 +133,3 @@ void Renderer::BuildShaders(ID3D11Device* d3dDevice)
 	delete vertexShader;
 	delete pixelShader;
 }
-
-void Renderer::BuildEffect(ID3D11Device* d3dDevice)
-{
-	DWORD shaderFlags = 0;
-
-#if defined( DEBUG ) || defined( _DEBUG )
-	shaderFlags |= D3D10_SHADER_DEBUG;
-	shaderFlags |= D3D10_SHADER_SKIP_OPTIMIZATION;
-#endif
-
-	ID3D10Blob *compiledShader = 0;
-	ID3D10Blob* compilationMsgs = 0;
-
-	//D3DCompileFromFile(L"Effects/color.fx", NULL, NULL, NULL, "fx_5_0", shaderFlags, 0, &compiledShader, &compilationMsgs);
-
-	if (compilationMsgs != 0)
-	{
-		MessageBoxA(0, (char*)compilationMsgs->GetBufferPointer(), 0, 0);
-		ReleaseCOM(compilationMsgs);
-	}
-
-	D3DX11CreateEffectFromMemory(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), 0, d3dDevice, &mEffect);
-
-	ReleaseCOM(compiledShader);
-
-	mTechnique = mEffect->GetTechniqueByName("ColorTech");
-	mWorldViewProj = mEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
-
-}

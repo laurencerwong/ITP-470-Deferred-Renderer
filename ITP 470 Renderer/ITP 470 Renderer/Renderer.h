@@ -12,7 +12,6 @@ public:
 	void UpdateScene(float dt);
 	void DrawScene();
 	void BuildVertexDescription(ID3D11Device* d3dDevice);
-	void BuildEffect(ID3D11Device* d3dDevice);
 	void BuildShaders(ID3D11Device* d3dDevice);
 
 	DrawableObject *box;

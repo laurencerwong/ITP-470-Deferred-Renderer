@@ -85,9 +85,4 @@
       <Filter>Effect Files</Filter>
     </CustomBuild>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Debug\temp.fbx">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
 </Project>
