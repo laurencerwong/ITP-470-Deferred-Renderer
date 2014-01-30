@@ -9,15 +9,16 @@ Renderer::Renderer(HINSTANCE hInstance)
 : D3DApp(hInstance)
 {
 	XMMATRIX I = XMMatrixIdentity();
-	XMStoreFloat4x4(&mView, I);
+	//XMStoreFloat4x4(&mView, I);
 	XMStoreFloat4x4(&mProj, I);
 
-	XMVECTOR pos = XMVectorSet(0, 0, 0, 1.0f);
+	/*XMVECTOR pos = XMVectorSet(0, 0, 0, 1.0f);
 	XMVECTOR target = XMVectorSet(0.0f, 0.0f, 10.0f, 1.0f);
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
-	XMStoreFloat4x4(&mView, V);
+	*/
+	camera = new Camera();
+	//XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
+	//XMStoreFloat4x4(&mView, V);
 
 	box = new DrawableObject();
 }
@@ -46,6 +47,12 @@ void Renderer::OnResize()
 void Renderer::UpdateScene(float dt)
 {
 	box->Update(dt);
+//	camera->Update(dt);
+}
+
+void Renderer::OnMouseMove(WPARAM btnState, int x, int y)
+{
+	camera->SetMouseCoords(static_cast<float>(x), static_cast<float>(y));
 }
 
 void Renderer::DrawScene()
@@ -61,9 +68,10 @@ void Renderer::DrawScene()
 	md3dImmediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBStruct *constantMatrix = (perFrameCBStruct*)mappedResource.pData;
 	constantMatrix->mProj = XMLoadFloat4x4(&mProj);
-	constantMatrix->mView = XMLoadFloat4x4(&mView);
+	constantMatrix->mView = camera->GetViewMatrix();
 	md3dImmediateContext->Unmap(constantBuffer, 0);
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+
 
 	box->Draw(md3dImmediateContext);
 
