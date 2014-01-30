@@ -20,7 +20,6 @@ public:
 	void DeclareShaderConstants(ID3D11Device* d3dDevice);
 
 	DrawableObject *box;
-	XMFLOAT4X4 mWorld;
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
 	ID3DX11Effect *mEffect;

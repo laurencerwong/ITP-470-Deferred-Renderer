@@ -9,7 +9,6 @@ Renderer::Renderer(HINSTANCE hInstance)
 : D3DApp(hInstance)
 {
 	XMMATRIX I = XMMatrixIdentity();
-	XMStoreFloat4x4(&mWorld, I);
 	XMStoreFloat4x4(&mView, I);
 	XMStoreFloat4x4(&mProj, I);
 

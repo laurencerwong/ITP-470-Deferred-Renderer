@@ -81,6 +81,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp" />
     <ClCompile Include="FileReaderWriter.cpp" />
     <ClCompile Include="FrankLunaCode\d3dApp.cpp" />
     <ClCompile Include="FrankLunaCode\d3dUtil.cpp" />
@@ -91,6 +92,7 @@
     <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h" />
     <ClInclude Include="FileReaderWriter.h" />
     <ClInclude Include="FrankLunaCode\d3dApp.h" />
     <ClInclude Include="FrankLunaCode\d3dUtil.h" />
