@@ -8,6 +8,13 @@ struct perFrameCBStruct
 	XMMATRIX mView;
 };
 
+struct perFrameCBPSStruct
+{
+	//XMVECTOR gLightDir;
+	//XMVECTOR gLightColor;
+	XMVECTOR gAmbientColor;
+};
+
 class Renderer : public D3DApp
 {
 public:
@@ -19,7 +26,7 @@ public:
 	void UpdateScene(float dt);
 	void DrawScene();
 	void DeclareShaderConstants(ID3D11Device* d3dDevice);
-	virtual void OnMouseMove(WPARAM btnState, int x, int y) override;
+	virtual void OnMouseMoveRaw(WPARAM btnState, long x, long y) override;
 
 	DrawableObject *box;
 	Camera *camera;
@@ -28,5 +35,6 @@ public:
 	ID3D11InputLayout *mInputLayout;
 	ID3D11VertexShader* colorVS;
 	ID3D11PixelShader* colorPS;
-	ID3D11Buffer* constantBuffer;
+	ID3D11Buffer* perFrameVSConstantBuffer;
+	ID3D11Buffer* perFramePSConstantBuffer;
 };

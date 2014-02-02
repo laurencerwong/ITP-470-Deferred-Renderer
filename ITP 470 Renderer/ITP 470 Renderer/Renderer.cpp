@@ -1,25 +1,13 @@
 #include "Renderer.h"
 
-//TODO ask sanjay about how people normally update the constant buffers and if you need a separate struct for each shader
-//TODO ask sanjay how 
-
 
 
 Renderer::Renderer(HINSTANCE hInstance)
 : D3DApp(hInstance)
 {
 	XMMATRIX I = XMMatrixIdentity();
-	//XMStoreFloat4x4(&mView, I);
 	XMStoreFloat4x4(&mProj, I);
-
-	/*XMVECTOR pos = XMVectorSet(0, 0, 0, 1.0f);
-	XMVECTOR target = XMVectorSet(0.0f, 0.0f, 10.0f, 1.0f);
-	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	*/
 	camera = new Camera();
-	//XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
-	//XMStoreFloat4x4(&mView, V);
-
 	box = new DrawableObject();
 }
 
@@ -47,10 +35,10 @@ void Renderer::OnResize()
 void Renderer::UpdateScene(float dt)
 {
 	box->Update(dt);
-//	camera->Update(dt);
+	camera->Update(dt);
 }
 
-void Renderer::OnMouseMove(WPARAM btnState, int x, int y)
+void Renderer::OnMouseMoveRaw(WPARAM btnState, long x, long y)
 {
 	camera->SetMouseCoords(static_cast<float>(x), static_cast<float>(y));
 }
@@ -65,13 +53,18 @@ void Renderer::DrawScene()
 
 	// Set constants
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	md3dImmediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	perFrameCBStruct *constantMatrix = (perFrameCBStruct*)mappedResource.pData;
-	constantMatrix->mProj = XMLoadFloat4x4(&mProj);
-	constantMatrix->mView = camera->GetViewMatrix();
-	md3dImmediateContext->Unmap(constantBuffer, 0);
-	md3dImmediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
+	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
+	constantVSMatrix->mView = camera->GetViewMatrix();
+	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
+	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
 
+	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
+	constantPSStruct->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
+	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
+	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
 
 	box->Draw(md3dImmediateContext);
 
@@ -89,5 +82,13 @@ void Renderer::DeclareShaderConstants(ID3D11Device* d3dDevice)
 	perFrameConstantBufferDesc.MiscFlags = 0;
 	perFrameConstantBufferDesc.StructureByteStride = 0;
 
-	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &constantBuffer);
+	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFrameVSConstantBuffer);
+
+	perFrameConstantBufferDesc.ByteWidth = sizeof(perFrameCBPSStruct);
+	perFrameConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perFrameConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perFrameConstantBufferDesc.MiscFlags = 0;
+	perFrameConstantBufferDesc.StructureByteStride = 0;
+
+	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSConstantBuffer);
 }
