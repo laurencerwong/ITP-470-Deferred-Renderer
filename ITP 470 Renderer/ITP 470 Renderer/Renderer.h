@@ -10,8 +10,8 @@ struct perFrameCBStruct
 
 struct perFrameCBPSStruct
 {
-	//XMVECTOR gLightDir;
-	//XMVECTOR gLightColor;
+	XMVECTOR gLightDir;
+	XMVECTOR gLightColor;
 	XMVECTOR gAmbientColor;
 };
 

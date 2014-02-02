@@ -35,7 +35,7 @@ void Renderer::OnResize()
 void Renderer::UpdateScene(float dt)
 {
 	box->Update(dt);
-	camera->Update(dt);
+	//camera->Update(dt);
 }
 
 void Renderer::OnMouseMoveRaw(WPARAM btnState, long x, long y)
@@ -63,6 +63,8 @@ void Renderer::DrawScene()
 	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
 	constantPSStruct->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
+	constantPSStruct->gLightColor = XMLoadFloat4(&XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
+	constantPSStruct->gLightDir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3(1.0f, 0.0f, 0.0f)));
 	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
 

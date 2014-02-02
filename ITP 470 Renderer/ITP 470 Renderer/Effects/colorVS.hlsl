@@ -1,7 +1,7 @@
 cbuffer cbPerFrame
 {
-	float4x4 gView;
 	float4x4 gProj;
+	float4x4 gView;
 };
 
 cbuffer cbPerObject
@@ -26,8 +26,9 @@ PixelIn main( VertexIn input )
 {
 	PixelIn output;
 	output.pos = mul(gWorld, float4(input.pos, 1.0));
-	output.pos = mul(gView, output.pos);
 	output.pos = mul(gProj, output.pos);
+	output.pos = mul(gView, output.pos);
+
 	output.color = input.color;
 	return output;
 }
