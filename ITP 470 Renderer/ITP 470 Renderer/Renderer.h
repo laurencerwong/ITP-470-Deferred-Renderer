@@ -1,6 +1,7 @@
 #include "FrankLunaCode\d3dApp.h"
 #include "DrawableObject.h"
 #include "Camera.h"
+#include "LightManager.h"
 
 struct perFrameCBStruct
 {
@@ -10,9 +11,10 @@ struct perFrameCBStruct
 
 struct perFrameCBPSStruct
 {
-	XMVECTOR gLightDir;
-	XMVECTOR gLightColor;
+	DirectionalLight gDirLights;
+	PointLight gPointLights;
 	XMVECTOR gAmbientColor;
+	XMVECTOR gCamPos;
 };
 
 class Renderer : public D3DApp
@@ -30,6 +32,7 @@ public:
 
 	DrawableObject *box;
 	Camera *camera;
+	LightManager *lightManager;
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
 	ID3D11InputLayout *mInputLayout;

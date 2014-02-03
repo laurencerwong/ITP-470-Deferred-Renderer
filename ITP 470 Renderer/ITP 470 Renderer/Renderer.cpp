@@ -5,10 +5,12 @@
 Renderer::Renderer(HINSTANCE hInstance)
 : D3DApp(hInstance)
 {
+	box = new DrawableObject();
+	lightManager = new LightManager();
 	XMMATRIX I = XMMatrixIdentity();
 	XMStoreFloat4x4(&mProj, I);
 	camera = new Camera();
-	box = new DrawableObject();
+
 }
 
 Renderer::~Renderer()
@@ -22,6 +24,12 @@ bool Renderer::Init()
 
 	box->LoadFromString("temp.obj", md3dDevice);
 	DeclareShaderConstants(md3dDevice);
+
+	//init default lights
+	lightManager->CreateDirectionalLight(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(1.0f, 0.50f, 0.0f));
+
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 11.0f, -10.0f), 0.1f, 10.0f);
+
 	return true;
 }
 
@@ -35,6 +43,8 @@ void Renderer::OnResize()
 void Renderer::UpdateScene(float dt)
 {
 	box->Update(dt);
+	lightManager->Update(dt);
+	int size = sizeof(DirectionalLight);
 	//camera->Update(dt);
 }
 
@@ -62,9 +72,11 @@ void Renderer::DrawScene()
 
 	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
+	constantPSStruct->gDirLights = lightManager->GetDirectionalLights()[0];
+	constantPSStruct->gPointLights = lightManager->GetPointLights()[0];
 	constantPSStruct->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
-	constantPSStruct->gLightColor = XMLoadFloat4(&XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
-	constantPSStruct->gLightDir = XMVector3Normalize(XMLoadFloat3(&XMFLOAT3(1.0f, 0.0f, 0.0f)));
+	constantPSStruct->gCamPos = XMLoadFloat3(&camera->GetPosition());
+
 	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
 
