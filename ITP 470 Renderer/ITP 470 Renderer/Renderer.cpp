@@ -26,9 +26,9 @@ bool Renderer::Init()
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights
-	lightManager->CreateDirectionalLight(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(1.0f, 0.50f, 0.0f));
+	lightManager->CreateDirectionalLight(XMFLOAT4(0.0f, 0.2f, 0.2f, 1.0f), XMFLOAT3(1.0f, 0.50f, 0.0f));
 
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 11.0f, -10.0f), 0.1f, 10.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.9f, 0.0f, 0.9f, 1.0f), XMFLOAT3(2.0f, 2.0f, -15.0f), 0.1f, 8.0f);
 
 	return true;
 }
