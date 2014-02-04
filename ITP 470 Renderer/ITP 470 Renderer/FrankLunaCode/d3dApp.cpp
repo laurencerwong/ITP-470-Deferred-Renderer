@@ -330,8 +330,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		if (raw.header.dwType == RIM_TYPEMOUSE)
 		{
-			if (!raw.data.mouse.ulButtons)
-				OnMouseMoveRaw(wParam, raw.data.mouse.lLastX, raw.data.mouse.lLastY);
+			OnMouseMoveRaw(wParam, raw.data.mouse);
 			break;
 		}
 	}

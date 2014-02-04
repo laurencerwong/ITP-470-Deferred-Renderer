@@ -40,7 +40,7 @@ public:
 	virtual void OnMouseDown(WPARAM btnState, int x, int y){ }
 	virtual void OnMouseUp(WPARAM btnState, int x, int y)  { }
 	virtual void OnMouseMove(WPARAM btnState, int x, int y){ }
-	virtual void OnMouseMoveRaw(WPARAM btnState, long x, long y){ }
+	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse){ }
 
 protected:
 	bool InitMainWindow();

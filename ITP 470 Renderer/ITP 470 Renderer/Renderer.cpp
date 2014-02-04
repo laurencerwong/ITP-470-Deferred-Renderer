@@ -1,11 +1,9 @@
 #include "Renderer.h"
-
-
+#include "DrawableObject.h"""
 
 Renderer::Renderer(HINSTANCE hInstance)
 : D3DApp(hInstance)
 {
-	box = new DrawableObject();
 	lightManager = new LightManager();
 	XMMATRIX I = XMMatrixIdentity();
 	XMStoreFloat4x4(&mProj, I);
@@ -21,16 +19,19 @@ bool Renderer::Init()
 {
 	if (!D3DApp::Init())
 		return false;
+	loader = new SceneLoader(md3dDevice);
 
-	box->LoadFromString("temp.obj", md3dDevice);
+	loader->LoadFile("land1.obj");
+	loader->LoadFile("skybox.obj");
+	loader->LoadFile("temp.obj");
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights
-	lightManager->CreateDirectionalLight(XMFLOAT4(0.0f, 0.2f, 0.2f, 1.0f), XMFLOAT3(0.0f, 5.0f, -15.0f));
+	lightManager->CreateDirectionalLight(XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f), XMFLOAT3(20.0f, -5.0f, 0.0f));
 
 
-	lightManager->CreatePointLight(XMFLOAT4(0.9f, 0.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 2.0f, -15.0f), 0.1f, 8.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.9f, 0.9f, 1.0f), XMFLOAT3(-5.0f, 2.0f, -15.0f), 0.1f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(30.0f, 20.0f, 5.0f), 5.0f, 108.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-30.0f, 20.0f, 5.0f), 5.0f, 108.0f);
 
 	return true;
 }
@@ -44,15 +45,22 @@ void Renderer::OnResize()
 
 void Renderer::UpdateScene(float dt)
 {
-	box->Update(dt);
+	for (DrawableObject* object : loader->GetDrawableObjects())
+	{
+		//object->Update(dt);
+	}
 	lightManager->Update(dt);
 	int size = sizeof(DirectionalLight);
-	//camera->Update(dt);
+	camera->Update(dt);
 }
 
-void Renderer::OnMouseMoveRaw(WPARAM btnState, long x, long y)
+void Renderer::OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &mouse)
 {
-	camera->SetMouseCoords(static_cast<float>(x), static_cast<float>(y));
+	camera->SetMouseCoords(static_cast<float>(mouse.lLastX), static_cast<float>(mouse.lLastY));
+	if (mouse.usButtonFlags & RI_MOUSE_WHEEL)
+	{
+		camera->UpdateMouseWheel(mouse.usButtonData);
+	}
 }
 
 void Renderer::DrawScene()
@@ -82,8 +90,11 @@ void Renderer::DrawScene()
 
 	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
-
-	box->Draw(md3dImmediateContext);
+	
+	for (DrawableObject* object : loader->GetDrawableObjects())
+	{
+		object->Draw(md3dImmediateContext);
+	}
 
 	HR(mSwapChain->Present(0, 0));
 }

@@ -1,5 +1,5 @@
 #include "FrankLunaCode\d3dApp.h"
-#include "DrawableObject.h"
+#include "SceneLoader.h"
 #include "Camera.h"
 #include "LightManager.h"
 
@@ -29,9 +29,9 @@ public:
 	void UpdateScene(float dt);
 	void DrawScene();
 	void DeclareShaderConstants(ID3D11Device* d3dDevice);
-	virtual void OnMouseMoveRaw(WPARAM btnState, long x, long y) override;
+	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 
-	DrawableObject *box;
+	SceneLoader *loader;
 	Camera *camera;
 	LightManager *lightManager;
 	XMFLOAT4X4 mView;

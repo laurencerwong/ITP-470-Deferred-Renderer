@@ -92,6 +92,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DrawableObject.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="SceneLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -105,6 +106,7 @@
     <ClInclude Include="DrawableObject.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="VertexUtil.h" />
   </ItemGroup>
   <ItemGroup>
