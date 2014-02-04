@@ -26,10 +26,11 @@ bool Renderer::Init()
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights
-	lightManager->CreateDirectionalLight(XMFLOAT4(0.0f, 0.2f, 0.2f, 1.0f), XMFLOAT3(15.0f, -5.00f, -15.0f));
+	lightManager->CreateDirectionalLight(XMFLOAT4(0.0f, 0.2f, 0.2f, 1.0f), XMFLOAT3(0.0f, 5.0f, -15.0f));
 
 
 	lightManager->CreatePointLight(XMFLOAT4(0.9f, 0.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 2.0f, -15.0f), 0.1f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.9f, 0.9f, 1.0f), XMFLOAT3(-5.0f, 2.0f, -15.0f), 0.1f, 8.0f);
 
 	return true;
 }
@@ -74,7 +75,8 @@ void Renderer::DrawScene()
 	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
 	constantPSStruct->gDirLights = lightManager->GetDirectionalLights()[0];
-	constantPSStruct->gPointLights = lightManager->GetPointLights()[0];
+	constantPSStruct->gPointLight1 = lightManager->GetPointLights()[0];
+	constantPSStruct->gPointLight2 = lightManager->GetPointLights()[1];
 	constantPSStruct->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
 	constantPSStruct->gCamPos = XMLoadFloat3(&camera->GetPosition());
 

@@ -12,7 +12,8 @@ struct perFrameCBStruct
 struct perFrameCBPSStruct
 {
 	DirectionalLight gDirLights;
-	PointLight gPointLights;
+	PointLight gPointLight1;
+	PointLight gPointLight2;
 	XMVECTOR gAmbientColor;
 	XMVECTOR gCamPos;
 };
