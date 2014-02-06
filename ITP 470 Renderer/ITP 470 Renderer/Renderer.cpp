@@ -22,7 +22,7 @@ bool Renderer::Init()
 	loader = new SceneLoader(md3dDevice);
 
 	loader->LoadFile("land1.obj");
-	loader->LoadFile("cylinder.obj");
+	//loader->LoadFile("cylinder.obj");
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights

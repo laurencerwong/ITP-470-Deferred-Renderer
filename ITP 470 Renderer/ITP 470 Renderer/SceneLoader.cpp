@@ -73,7 +73,7 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
 	ID3D11VertexShader *newVertexShader;
 	ID3D11PixelShader *newPixelShader;
 	ID3D11InputLayout *newInputLayout;
-	ID3D11Buffer *newConstantBuffer;
+	ID3D11Buffer *newVSConstantBuffer, *newPSConstantBuffer;
 	d3dDevice->CreateVertexShader(vertexShaderData->shaderByteData, vertexShaderData->size, nullptr, &newVertexShader);
 	d3dDevice->CreatePixelShader(pixelShaderData->shaderByteData, pixelShaderData->size, nullptr, &newPixelShader);
 
@@ -85,21 +85,33 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
 
 	d3dDevice->CreateInputLayout(vertex1Desc, 3, vertexShaderData->shaderByteData, vertexShaderData->size, &newInputLayout);
 
-	//declare constant buffer description
+	//declare VS constant buffer description
 	D3D11_BUFFER_DESC perObjectConstantBufferDesc;
 	perObjectConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	perObjectConstantBufferDesc.ByteWidth = sizeof(perObjectCBStruct);
+	perObjectConstantBufferDesc.ByteWidth = sizeof(perObjectCBVSStruct);
+	perObjectConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perObjectConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perObjectConstantBufferDesc.MiscFlags = 0;
+	perObjectConstantBufferDesc.StructureByteStride = 0;
+	d3dDevice->CreateBuffer(&perObjectConstantBufferDesc, NULL, &newVSConstantBuffer);
+
+
+	//declare PS constant buffer description
+	perObjectConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	perObjectConstantBufferDesc.ByteWidth = sizeof(perObjectCBPSStruct);
 	perObjectConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	perObjectConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	perObjectConstantBufferDesc.MiscFlags = 0;
 	perObjectConstantBufferDesc.StructureByteStride = 0;
 
-	d3dDevice->CreateBuffer(&perObjectConstantBufferDesc, NULL, &newConstantBuffer);
+	d3dDevice->CreateBuffer(&perObjectConstantBufferDesc, NULL, &newPSConstantBuffer);
+
 
 	inObject.SetVertexShader(newVertexShader);
 	inObject.SetPixelShader(newPixelShader);
 	inObject.SetInputLayout(newInputLayout);
-	inObject.SetConstantBuffer(newConstantBuffer);
+	inObject.SetVSConstantBuffer(newVSConstantBuffer);
+	inObject.SetPSConstantBuffer(newPSConstantBuffer);
 
 	delete vertexShaderData;
 	delete pixelShaderData;

@@ -35,13 +35,20 @@ void DrawableObject::Draw(ID3D11DeviceContext* d3dDeviceContext)
 	d3dDeviceContext->VSSetShader(vertexShader, 0, 0);
 	d3dDeviceContext->PSSetShader(pixelShader, 0, 0);
 
-	//set object 
+	//set object vertex shader resources
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	d3dDeviceContext->Map(perObjectConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	perObjectCBStruct *constantMatrix = (perObjectCBStruct*)mappedResource.pData;
-	constantMatrix->mWorld = XMMatrixRotationQuaternion(XMLoadFloat4(&mRotation)) * XMMatrixTranslationFromVector(XMLoadFloat3(&mPosition));
-	d3dDeviceContext->Unmap(perObjectConstantBuffer, 0);
-	d3dDeviceContext->VSSetConstantBuffers(1, 1, &perObjectConstantBuffer);
+	d3dDeviceContext->Map(perObjectVSCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perObjectCBVSStruct *vertexShaderCB = (perObjectCBVSStruct*)mappedResource.pData;
+	XMStoreFloat4x4(&vertexShaderCB->mWorld, XMMatrixRotationQuaternion(XMLoadFloat4(&mRotation)) * XMMatrixTranslationFromVector(XMLoadFloat3(&mPosition)));
+	d3dDeviceContext->Unmap(perObjectVSCB, 0);
+	d3dDeviceContext->VSSetConstantBuffers(1, 1, &perObjectVSCB);
+
+	//set object pixel shader resources
+	d3dDeviceContext->Map(perObjectPSCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perObjectCBPSStruct *pixelShaderCB = (perObjectCBPSStruct*)mappedResource.pData;
+	pixelShaderCB->mMaterial = mMaterial;
+	d3dDeviceContext->Unmap(perObjectPSCB, 0);
+	d3dDeviceContext->PSSetConstantBuffers(1, 1, &perObjectPSCB);
 
 	d3dDeviceContext->PSSetSamplers(0, 1, &textureSampler);
 	d3dDeviceContext->PSSetShaderResources(0, 1, &texture0View);

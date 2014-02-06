@@ -16,12 +16,24 @@ struct PointLight
 	float mInnerRadius, mOuterRadius;
 };
 
+struct Material
+{
+	float4 mAmbient;
+	float4 mDiffuse;
+	float4 mSpecular;
+};
+
 cbuffer cbPerFrame : register(b0)
 {
 	DirectionalLight gDirLight;
 	PointLight pointLight[3];
 	float4 gAmbientColor;
 	float3 gCamPos;
+}
+
+cbuffer cbPerObject : register(b1)
+{
+	Material gMaterial;
 }
 
 SamplerState DiffuseTextureSampler
@@ -67,16 +79,16 @@ void CalculatePointLight(PointLight inLight, float3 inNorm, float3 inPos, float3
 	if (diffuseFactor > 0.0f)
 	{
 		diffuse = float4(lerp((float3)inLight.mColor, float3(0.0f, 0.0f, 0.0f), lerpAmount), 1.0f);
-		diffuse *= diffuseFactor;
+		diffuse *= diffuseFactor * gMaterial.mDiffuse;
 
 		float3 reflection = reflect(-fromPixToLight, inNorm);
 		float attenuation = saturate(1.0f - distToLight/ inLight.mOuterRadius);
 		float specularMultiple = dot(reflection, normalize(inPixToCamera));
 		if (specularMultiple > 0)
 		{
-			float specFactor = pow(specularMultiple, 50.0f);
+			float specFactor = pow(specularMultiple, gMaterial.mSpecular.w);
 			specular = float4(lerp((float3)inLight.mSpecularColor, float3(0.0f, 0.0f, 0.0f), lerpAmount), 1.0f);
-			specular *= specFactor;
+			specular *= specFactor * gMaterial.mSpecular;
 		}
 	}	
 }
@@ -85,16 +97,20 @@ float4 main(PixelIn input) : SV_TARGET
 {
 	input.norm = normalize(input.norm);
 	float3 pixToCamera = normalize(gCamPos - input.posWorld);
-	float4 finalColor = gDiffuseTexture.Sample(DiffuseTextureSampler, input.tex) * gAmbientColor;
+	float4 texColor = gDiffuseTexture.Sample(DiffuseTextureSampler, input.tex);
+	float4 ambient = float4(0.0, 0.0, 0.0, 0.0);
+	float4 diffuse = float4(0.0, 0.0, 0.0, 0.0);
+	float4 specular = float4(0.0, 0.0, 0.0, 0.0);
+	ambient = gAmbientColor * gMaterial.mAmbient;
 	float NdotL = max(dot(input.norm, normalize(-gDirLight.mPosition)), 0.0);
 	if (NdotL > 0.0f)
 	{
 		float3 reflection = reflect(normalize(gDirLight.mPosition), input.norm);
-		float dirSpecFactor = pow(max(dot(reflection, pixToCamera), 0.0f), 80.0f);
-		finalColor += gDirLight.mSpecularColor * dirSpecFactor;
-		finalColor += gDirLight.mColor * NdotL;
+		float dirSpecFactor = pow(max(dot(reflection, pixToCamera), 0.0f), gMaterial.mSpecular.w);
+		diffuse = gDirLight.mColor * NdotL *gMaterial.mDiffuse;
+		specular = gDirLight.mSpecularColor * dirSpecFactor * gMaterial.mSpecular;
 	}	
-	float4 diffuse, specular;
+	float4 finalColor = texColor * (ambient + diffuse) + specular;
 	for (int i = 0; i < 3; ++i)
 	{
 		CalculatePointLight(pointLight[i], input.norm, input.posWorld, pixToCamera, diffuse, specular);
@@ -103,6 +119,6 @@ float4 main(PixelIn input) : SV_TARGET
 	}
 
 	
-
+	finalColor.w = 1.0f;
 	return finalColor;
 }

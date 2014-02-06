@@ -16,9 +16,13 @@ struct Material
 	XMFLOAT4 mDiffuse;
 	XMFLOAT3 mSpecular; float mShininess; //w component of specular is shininess
 };
-struct perObjectCBStruct
+struct perObjectCBVSStruct
 {
-	XMMATRIX mWorld;
+	XMFLOAT4X4 mWorld;
+};
+struct perObjectCBPSStruct
+{
+	Material mMaterial;
 };
 
 class DrawableObject
@@ -40,8 +44,11 @@ public:
 	void SetNumIndicies(int inNumIndices)				{ numIndices = inNumIndices; }
 	int	GetNumIndices()									{ return numIndices; }
 
-	void SetConstantBuffer(ID3D11Buffer *inBuffer)		{ perObjectConstantBuffer = inBuffer; }
-	ID3D11Buffer* GetConstantBuffer()					{ return perObjectConstantBuffer; }
+	void SetVSConstantBuffer(ID3D11Buffer *inBuffer)		{ perObjectVSCB = inBuffer; }
+	ID3D11Buffer* GetVSConstantBuffer()					{ return perObjectVSCB; }
+
+	void SetPSConstantBuffer(ID3D11Buffer *inBuffer)		{ perObjectPSCB = inBuffer; }
+	ID3D11Buffer* GetPSConstantBuffer()					{ return perObjectPSCB; }
 
 	void SetInputLayout(ID3D11InputLayout *inLayout)	{ inputLayout = inLayout; }
 	ID3D11InputLayout* GetInputLayout()					{ return inputLayout; }
@@ -84,7 +91,8 @@ private:
 
 	ID3D11Buffer				*vertexBuffer;
 	ID3D11Buffer				*indexBuffer;
-	ID3D11Buffer				*perObjectConstantBuffer;
+	ID3D11Buffer				*perObjectVSCB;
+	ID3D11Buffer				*perObjectPSCB;
 	ID3D11InputLayout			*inputLayout;
 	ID3D11VertexShader			*vertexShader;
 	ID3D11PixelShader			*pixelShader;
