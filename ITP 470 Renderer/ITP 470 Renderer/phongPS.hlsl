@@ -82,7 +82,6 @@ void CalculatePointLight(PointLight inLight, float3 inNorm, float3 inPos, float3
 		diffuse *= diffuseFactor * gMaterial.mDiffuse;
 
 		float3 reflection = reflect(-fromPixToLight, inNorm);
-		float attenuation = saturate(1.0f - distToLight/ inLight.mOuterRadius);
 		float specularMultiple = dot(reflection, normalize(inPixToCamera));
 		[flatten]
 		if (specularMultiple > 0)
