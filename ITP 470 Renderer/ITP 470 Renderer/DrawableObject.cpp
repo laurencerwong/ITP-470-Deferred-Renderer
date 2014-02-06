@@ -28,8 +28,7 @@ void DrawableObject::Draw(ID3D11DeviceContext* d3dDeviceContext)
 	UINT stride = mVertexBufferStride;
 	UINT offset = 0;
 
-	d3dDeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-	d3dDeviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
 	d3dDeviceContext->IASetInputLayout(inputLayout);
 	d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	d3dDeviceContext->VSSetShader(vertexShader, 0, 0);
@@ -52,6 +51,13 @@ void DrawableObject::Draw(ID3D11DeviceContext* d3dDeviceContext)
 
 	d3dDeviceContext->PSSetSamplers(0, 1, &textureSampler);
 	d3dDeviceContext->PSSetShaderResources(0, 1, &texture0View);
-	d3dDeviceContext->DrawIndexed(numIndices, 0, 0);
+
+	for (std::tuple<ID3D11Buffer*, ID3D11Buffer*, int> part : mParts)
+	{
+		d3dDeviceContext->IASetVertexBuffers(0, 1, &std::get<0>(part), &stride, &offset);
+		d3dDeviceContext->IASetIndexBuffer(std::get<1>(part), DXGI_FORMAT_R32_UINT, 0);
+		d3dDeviceContext->DrawIndexed(std::get<2>(part), 0, 0);
+	}
+
 }
 

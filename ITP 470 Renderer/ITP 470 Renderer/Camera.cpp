@@ -41,7 +41,15 @@ void Camera::UpdateMouseWheel(USHORT inMouseWheelDelta)
 	forwardVec = XMVectorSubtract(XMLoadFloat3(&mTarget), XMLoadFloat3(&mPosition));
 	XMVECTOR lengthFromTarget = XMVector3Length(forwardVec);
 	forwardVec /= lengthFromTarget;
-	lengthFromTarget += XMVectorReplicate(signedInMouseDelta);
-	forwardVec *= lengthFromTarget;
+	XMVECTOR lengthFromTargetDelta = XMVectorReplicate(signedInMouseDelta);
+	lengthFromTarget += lengthFromTargetDelta;
+	if (XMVector3Greater(lengthFromTarget, XMVectorZero()))
+	{
+		forwardVec *= lengthFromTarget;
+	}
+	else
+	{
+		lengthFromTarget -= lengthFromTargetDelta;
+	}
 	XMStoreFloat3(&mPosition, XMLoadFloat3(&mTarget) - forwardVec);
 }

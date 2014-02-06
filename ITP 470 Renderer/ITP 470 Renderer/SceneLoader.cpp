@@ -31,28 +31,26 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 		HRESULT hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &texture0, &newShaderResourceView);
 		if (FAILED(hr))
 		{
+			CreateDDSTextureFromFile(d3dDevice, L"texture_missing.dds", &texture0, &newShaderResourceView);
 		}
-		else
-		{
-			D3D11_SAMPLER_DESC textureSamplerDesc;
-			ZeroMemory(&textureSamplerDesc, sizeof(textureSamplerDesc));
-			textureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			textureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-			textureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-			textureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-			textureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-			textureSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+		D3D11_SAMPLER_DESC textureSamplerDesc;
+		ZeroMemory(&textureSamplerDesc, sizeof(textureSamplerDesc));
+		textureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		textureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		textureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		textureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		textureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		textureSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-			ID3D11SamplerState *newSamplerState;
-			d3dDevice->CreateSamplerState(&textureSamplerDesc, &newSamplerState);
+		ID3D11SamplerState *newSamplerState;
+		d3dDevice->CreateSamplerState(&textureSamplerDesc, &newSamplerState);
 
-			D3D11_TEXTURE2D_DESC textureDesc;
-			reinterpret_cast<ID3D11Texture2D*>(texture0)->GetDesc(&textureDesc);
-			texture0->Release();
+		D3D11_TEXTURE2D_DESC textureDesc;
+		reinterpret_cast<ID3D11Texture2D*>(texture0)->GetDesc(&textureDesc);
+		texture0->Release();
 
-			inObject.SetShaderResourceView(newShaderResourceView);
-			inObject.SetSamplerState(newSamplerState);
-		}
+		inObject.SetShaderResourceView(newShaderResourceView);
+		inObject.SetSamplerState(newSamplerState);
 	}
 	aiColor3D ambientColor, diffuseColor, specularColor;
 	float shininess;
@@ -123,10 +121,14 @@ void LoadVertices(const aiMesh &inMesh, std::vector<Vertex> &convertedVertices)
 	{
 		Vertex newVertex;
 		newVertex.LoadAiVector3D(newVertex.Pos, inMesh.mVertices[i]);
-		newVertex.LoadAiVector3D(newVertex.Normal, inMesh.mNormals[i]);
+		if (inMesh.HasNormals())
+		{
+			newVertex.LoadAiVector3D(newVertex.Normal, inMesh.mNormals[i]);
+		}
 		if (inMesh.HasTextureCoords(0))
 		{
 			newVertex.LoadAiVector3D(newVertex.Tex0, inMesh.mTextureCoords[0][i]);
+			newVertex.Tex0.y = 1.0 - newVertex.Tex0.y;
 		}
 
 		convertedVertices.push_back(newVertex);
@@ -189,6 +191,8 @@ bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject
 	inObject.SetVertexBuffer(newVertexBuffer);
 	inObject.SetIndexBuffer(newIndexBuffer);
 
+	inObject.AddPart(newVertexBuffer, newIndexBuffer, tempIndexList.size());
+
 	return true;
 }
 
@@ -205,15 +209,18 @@ bool SceneLoader::LoadFile(const char* filename)
 		OutputDebugStringA(debugMsg.c_str());
 		return false;
 	}
+	DrawableObject *newObject = new DrawableObject();
 	for (unsigned int i = 0; i < scene->mRootNode->mNumChildren; ++i)
 	{
-		DrawableObject *newObject = new DrawableObject();
 		bool successfulLoad = true;
 		aiNode* currentNode = scene->mRootNode->mChildren[i];
-		ProcessMesh(d3dDevice, *scene->mMeshes[currentNode->mMeshes[0]], *newObject);
 		BuildShaders(d3dDevice, *newObject);
-		LoadMaterials(d3dDevice, scene->mMeshes[currentNode->mMeshes[0]]->mMaterialIndex, *newObject, scene);
-		mDrawableObjects.push_back(newObject);
+		for (unsigned int j = 0; j < currentNode->mNumMeshes; ++j)
+		{
+			ProcessMesh(d3dDevice, *scene->mMeshes[currentNode->mMeshes[j]], *newObject);
+			LoadMaterials(d3dDevice, scene->mMeshes[currentNode->mMeshes[j]]->mMaterialIndex, *newObject, scene);
+		}
 	}
+	mDrawableObjects.push_back(newObject);
 	return true;
 }

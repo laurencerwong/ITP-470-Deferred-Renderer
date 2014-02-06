@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "DrawableObject.h"""
+#include "DrawableObject.h"
 
 Renderer::Renderer(HINSTANCE hInstance)
 : D3DApp(hInstance)
@@ -21,8 +21,8 @@ bool Renderer::Init()
 		return false;
 	loader = new SceneLoader(md3dDevice);
 
-	loader->LoadFile("land1.obj");
-	//loader->LoadFile("cylinder.obj");
+	loader->LoadFile("land1specular.obj");
+	loader->LoadFile("temp2.obj");
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights
@@ -31,7 +31,7 @@ bool Renderer::Init()
 
 	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(30.0f, 20.0f, 5.0f), 5.0f, 72.0f);
 	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-30.0f, 20.0f, 5.0f), 5.0f, 72.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 20.0f, 35.0f), 5.0f, 72.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 20.0f, 35.0f), 5.0f, 72.0f);
 
 	return true;
 }

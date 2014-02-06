@@ -60,7 +60,6 @@ void CalculatePointLight(PointLight inLight, float3 inNorm, float3 inPos, float3
 
 	float distToLight = length(fromPixToLight);
 	float lerpAmount = 0.0f;
-	
 	if (distToLight > inLight.mOuterRadius)
 	{
 		return;
@@ -76,6 +75,7 @@ void CalculatePointLight(PointLight inLight, float3 inNorm, float3 inPos, float3
 
 	fromPixToLight /= distToLight;
 	float diffuseFactor = dot(normalize(fromPixToLight), inNorm);
+	[flatten]
 	if (diffuseFactor > 0.0f)
 	{
 		diffuse = float4(lerp((float3)inLight.mColor, float3(0.0f, 0.0f, 0.0f), lerpAmount), 1.0f);
@@ -84,6 +84,7 @@ void CalculatePointLight(PointLight inLight, float3 inNorm, float3 inPos, float3
 		float3 reflection = reflect(-fromPixToLight, inNorm);
 		float attenuation = saturate(1.0f - distToLight/ inLight.mOuterRadius);
 		float specularMultiple = dot(reflection, normalize(inPixToCamera));
+		[flatten]
 		if (specularMultiple > 0)
 		{
 			float specFactor = pow(specularMultiple, gMaterial.mSpecular.w);
@@ -98,9 +99,9 @@ float4 main(PixelIn input) : SV_TARGET
 	input.norm = normalize(input.norm);
 	float3 pixToCamera = normalize(gCamPos - input.posWorld);
 	float4 texColor = gDiffuseTexture.Sample(DiffuseTextureSampler, input.tex);
-	float4 ambient = float4(0.0, 0.0, 0.0, 0.0);
-	float4 diffuse = float4(0.0, 0.0, 0.0, 0.0);
-	float4 specular = float4(0.0, 0.0, 0.0, 0.0);
+	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	ambient = gAmbientColor * gMaterial.mAmbient;
 	float NdotL = max(dot(input.norm, normalize(-gDirLight.mPosition)), 0.0);
 	if (NdotL > 0.0f)
@@ -108,9 +109,10 @@ float4 main(PixelIn input) : SV_TARGET
 		float3 reflection = reflect(normalize(gDirLight.mPosition), input.norm);
 		float dirSpecFactor = pow(max(dot(reflection, pixToCamera), 0.0f), gMaterial.mSpecular.w);
 		diffuse = gDirLight.mColor * NdotL *gMaterial.mDiffuse;
-		specular = gDirLight.mSpecularColor * dirSpecFactor * gMaterial.mSpecular;
+		specular = saturate(gDirLight.mSpecularColor * dirSpecFactor * gMaterial.mSpecular);
 	}	
 	float4 finalColor = texColor * (ambient + diffuse) + specular;
+		[unroll]
 	for (int i = 0; i < 3; ++i)
 	{
 		CalculatePointLight(pointLight[i], input.norm, input.posWorld, pixToCamera, diffuse, specular);

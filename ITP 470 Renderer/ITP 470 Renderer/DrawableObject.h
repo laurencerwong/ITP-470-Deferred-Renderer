@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <vector>
+#include <tuple>
 #include "assimp/include/mesh.h"
 #include "assimp/include/scene.h"
 
@@ -16,6 +17,7 @@ struct Material
 	XMFLOAT4 mDiffuse;
 	XMFLOAT3 mSpecular; float mShininess; //w component of specular is shininess
 };
+
 struct perObjectCBVSStruct
 {
 	XMFLOAT4X4 mWorld;
@@ -76,6 +78,11 @@ public:
 		mMaterial.mShininess = inShininess;
 	}
 
+	void AddPart(ID3D11Buffer *inVertexBuffer, ID3D11Buffer *inIndexBuffer, int inNumIndices)
+	{
+		mParts.push_back(std::make_tuple(inVertexBuffer, inIndexBuffer, inNumIndices));
+	}
+
 private:
 	void BuildShaders(ID3D11Device* d3dDevice);
 	void LoadTexture(ID3D11Device* d3dDevice, const aiScene* scene);
@@ -88,6 +95,8 @@ private:
 	float		mScale;
 	int			numIndices;
 	UINT		mVertexBufferStride;
+
+	std::vector<std::tuple<ID3D11Buffer*, ID3D11Buffer*, int> > mParts;
 
 	ID3D11Buffer				*vertexBuffer;
 	ID3D11Buffer				*indexBuffer;
