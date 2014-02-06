@@ -4,7 +4,7 @@
 
 Camera::Camera()
 {
-	mPosition = XMFLOAT3(0.0f, 0.0f, 25.0f);
+	mPosition = XMFLOAT3(0.0f, 0.0f, -25.0f);
 	mTarget = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	mUp = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	mMouseCoordinates = XMFLOAT2(0, 0);

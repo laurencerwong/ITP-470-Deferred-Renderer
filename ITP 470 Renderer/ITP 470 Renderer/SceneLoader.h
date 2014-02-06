@@ -22,20 +22,6 @@ struct Vertex
 	}
 };
 
-struct ObjectInitializeData
-{
-	ID3D11Buffer				*vertexBuffer;
-	ID3D11Buffer				*indexBuffer;
-	ID3D11Buffer				*perObjectConstantBuffer;
-	ID3D11InputLayout			*inputLayout;
-	ID3D11VertexShader			*vertexShader;
-	ID3D11PixelShader			*pixelShader;
-	ID3D11SamplerState			*textureSampler;
-	ID3D11ShaderResourceView	*texture0View;
-	UINT						mVertexBufferStride;
-	int							numIndices;
-};
-
 class DrawableObject;
 
 class SceneLoader

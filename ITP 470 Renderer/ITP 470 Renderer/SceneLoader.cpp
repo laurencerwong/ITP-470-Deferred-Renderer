@@ -17,7 +17,7 @@ SceneLoader::~SceneLoader()
 {
 }
 
-void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, ObjectInitializeData &inObject, const aiScene *inScene)
+void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObject, const aiScene *inScene)
 {
 	aiString texPath;
 	aiReturn hasTex = inScene->mMaterials[inIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
@@ -27,10 +27,10 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, ObjectInitializeData &i
 		MultiByteToWideChar(CP_ACP, 0, texPath.C_Str(), -1, texPathW, 100);
 
 		ID3D11Resource *texture0;
-		HRESULT hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &texture0, &inObject.texture0View);
+		ID3D11ShaderResourceView *newShaderResourceView;
+		HRESULT hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &texture0, &newShaderResourceView);
 		if (FAILED(hr))
 		{
-			texture0->Release();
 		}
 		else
 		{
@@ -43,23 +43,39 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, ObjectInitializeData &i
 			textureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 			textureSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-			d3dDevice->CreateSamplerState(&textureSamplerDesc, &inObject.textureSampler);
+			ID3D11SamplerState *newSamplerState;
+			d3dDevice->CreateSamplerState(&textureSamplerDesc, &newSamplerState);
 
 			D3D11_TEXTURE2D_DESC textureDesc;
 			reinterpret_cast<ID3D11Texture2D*>(texture0)->GetDesc(&textureDesc);
 			texture0->Release();
+
+			inObject.SetShaderResourceView(newShaderResourceView);
+			inObject.SetSamplerState(newSamplerState);
 		}
 	}
+	aiColor3D ambientColor, diffuseColor, specularColor;
+	float shininess;
+	inScene->mMaterials[inIndex]->Get(AI_MATKEY_COLOR_AMBIENT, ambientColor);
+	inScene->mMaterials[inIndex]->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
+	inScene->mMaterials[inIndex]->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
+	inScene->mMaterials[inIndex]->Get(AI_MATKEY_SHININESS, shininess);
+
+	inObject.SetMaterial(ambientColor, diffuseColor, specularColor, shininess);
 }
 
-void BuildShaders(ID3D11Device* d3dDevice, ObjectInitializeData &inObject)
+void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
 {
 	shaderData *vertexShaderData, *pixelShaderData;
 	vertexShaderData = FileReaderWriter::ReadShader("phongVS.cso");
 	pixelShaderData = FileReaderWriter::ReadShader("phongPS.cso");
 
-	d3dDevice->CreateVertexShader(vertexShaderData->shaderByteData, vertexShaderData->size, nullptr, &inObject.vertexShader);
-	d3dDevice->CreatePixelShader(pixelShaderData->shaderByteData, pixelShaderData->size, nullptr, &inObject.pixelShader);
+	ID3D11VertexShader *newVertexShader;
+	ID3D11PixelShader *newPixelShader;
+	ID3D11InputLayout *newInputLayout;
+	ID3D11Buffer *newConstantBuffer;
+	d3dDevice->CreateVertexShader(vertexShaderData->shaderByteData, vertexShaderData->size, nullptr, &newVertexShader);
+	d3dDevice->CreatePixelShader(pixelShaderData->shaderByteData, pixelShaderData->size, nullptr, &newPixelShader);
 
 	D3D11_INPUT_ELEMENT_DESC vertex1Desc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -67,7 +83,7 @@ void BuildShaders(ID3D11Device* d3dDevice, ObjectInitializeData &inObject)
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	d3dDevice->CreateInputLayout(vertex1Desc, 3, vertexShaderData->shaderByteData, vertexShaderData->size, &inObject.inputLayout);
+	d3dDevice->CreateInputLayout(vertex1Desc, 3, vertexShaderData->shaderByteData, vertexShaderData->size, &newInputLayout);
 
 	//declare constant buffer description
 	D3D11_BUFFER_DESC perObjectConstantBufferDesc;
@@ -78,7 +94,12 @@ void BuildShaders(ID3D11Device* d3dDevice, ObjectInitializeData &inObject)
 	perObjectConstantBufferDesc.MiscFlags = 0;
 	perObjectConstantBufferDesc.StructureByteStride = 0;
 
-	d3dDevice->CreateBuffer(&perObjectConstantBufferDesc, NULL, &inObject.perObjectConstantBuffer);
+	d3dDevice->CreateBuffer(&perObjectConstantBufferDesc, NULL, &newConstantBuffer);
+
+	inObject.SetVertexShader(newVertexShader);
+	inObject.SetPixelShader(newPixelShader);
+	inObject.SetInputLayout(newInputLayout);
+	inObject.SetConstantBuffer(newConstantBuffer);
 
 	delete vertexShaderData;
 	delete pixelShaderData;
@@ -89,10 +110,12 @@ void LoadVertices(const aiMesh &inMesh, std::vector<Vertex> &convertedVertices)
 	for (unsigned int i = 0; i < inMesh.mNumVertices; ++i)
 	{
 		Vertex newVertex;
-
 		newVertex.LoadAiVector3D(newVertex.Pos, inMesh.mVertices[i]);
 		newVertex.LoadAiVector3D(newVertex.Normal, inMesh.mNormals[i]);
-		newVertex.LoadAiVector3D(newVertex.Tex0, inMesh.mTextureCoords[0][i]);
+		if (inMesh.HasTextureCoords(0))
+		{
+			newVertex.LoadAiVector3D(newVertex.Tex0, inMesh.mTextureCoords[0][i]);
+		}
 
 		convertedVertices.push_back(newVertex);
 	}
@@ -110,7 +133,7 @@ void LoadIndices(const aiMesh &inMesh, std::vector<UINT> &convertedIndices)
 }
 
 
-bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, ObjectInitializeData &inObject)
+bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject &inObject)
 {
 	std::vector<Vertex>tempVertexList;
 	std::vector<UINT>tempIndexList;
@@ -118,9 +141,9 @@ bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, ObjectInitiali
 	LoadVertices(inMesh, tempVertexList);
 	LoadIndices(inMesh, tempIndexList);
 
-	inObject.numIndices = tempIndexList.size();
+	inObject.SetNumIndicies(tempIndexList.size());
 
-	inObject.mVertexBufferStride = sizeof(Vertex);
+	inObject.SetVertexBufferStride(sizeof(Vertex));
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.ByteWidth = sizeof(Vertex)* tempVertexList.size();
@@ -134,7 +157,9 @@ bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, ObjectInitiali
 	D3D11_SUBRESOURCE_DATA vertexInitData;
 	vertexInitData.pSysMem = &tempVertexList[0];
 
-	ind3dDevice->CreateBuffer(&vertexBufferDesc, &vertexInitData, &(inObject.vertexBuffer));
+	ID3D11Buffer *newVertexBuffer, *newIndexBuffer;
+
+	ind3dDevice->CreateBuffer(&vertexBufferDesc, &vertexInitData, &(newVertexBuffer));
 
 	D3D11_BUFFER_DESC indicesBufferDesc;
 	indicesBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -147,7 +172,10 @@ bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, ObjectInitiali
 	D3D11_SUBRESOURCE_DATA indexInitData;
 	indexInitData.pSysMem = &tempIndexList[0];
 
-	ind3dDevice->CreateBuffer(&indicesBufferDesc, &indexInitData, &inObject.indexBuffer);
+	ind3dDevice->CreateBuffer(&indicesBufferDesc, &indexInitData, &newIndexBuffer);
+
+	inObject.SetVertexBuffer(newVertexBuffer);
+	inObject.SetIndexBuffer(newIndexBuffer);
 
 	return true;
 }
@@ -167,14 +195,13 @@ bool SceneLoader::LoadFile(const char* filename)
 	}
 	for (unsigned int i = 0; i < scene->mRootNode->mNumChildren; ++i)
 	{
-		ObjectInitializeData objectData;
+		DrawableObject *newObject = new DrawableObject();
 		bool successfulLoad = true;
 		aiNode* currentNode = scene->mRootNode->mChildren[i];
-		ProcessMesh(d3dDevice, *scene->mMeshes[currentNode->mMeshes[0]], objectData);
-		BuildShaders(d3dDevice, objectData);
-		LoadMaterials(d3dDevice, scene->mMeshes[currentNode->mMeshes[0]]->mMaterialIndex, objectData, scene);
-		mDrawableObjects.push_back(new DrawableObject(objectData.vertexBuffer, objectData.indexBuffer, objectData.numIndices, objectData.perObjectConstantBuffer, objectData.inputLayout,
-			objectData.mVertexBufferStride, objectData.vertexShader, objectData.pixelShader, objectData.textureSampler, objectData.texture0View));
+		ProcessMesh(d3dDevice, *scene->mMeshes[currentNode->mMeshes[0]], *newObject);
+		BuildShaders(d3dDevice, *newObject);
+		LoadMaterials(d3dDevice, scene->mMeshes[currentNode->mMeshes[0]]->mMaterialIndex, *newObject, scene);
+		mDrawableObjects.push_back(newObject);
 	}
 	return true;
 }

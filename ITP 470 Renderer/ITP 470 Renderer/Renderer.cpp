@@ -22,16 +22,16 @@ bool Renderer::Init()
 	loader = new SceneLoader(md3dDevice);
 
 	loader->LoadFile("land1.obj");
-	loader->LoadFile("skybox.obj");
-	loader->LoadFile("temp.obj");
+	loader->LoadFile("cylinder.obj");
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights
 	lightManager->CreateDirectionalLight(XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f), XMFLOAT3(20.0f, -5.0f, 0.0f));
 
 
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(30.0f, 20.0f, 5.0f), 5.0f, 108.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-30.0f, 20.0f, 5.0f), 5.0f, 108.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(30.0f, 20.0f, 5.0f), 5.0f, 72.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-30.0f, 20.0f, 5.0f), 5.0f, 72.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 20.0f, 35.0f), 5.0f, 72.0f);
 
 	return true;
 }
@@ -82,9 +82,10 @@ void Renderer::DrawScene()
 
 	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
-	constantPSStruct->gDirLights = lightManager->GetDirectionalLights()[0];
-	constantPSStruct->gPointLight1 = lightManager->GetPointLights()[0];
-	constantPSStruct->gPointLight2 = lightManager->GetPointLights()[1];
+	constantPSStruct->gDirLight = lightManager->GetDirectionalLights()[0];
+	constantPSStruct->gPointLight[0] = lightManager->GetPointLights()[0];
+	constantPSStruct->gPointLight[1] = lightManager->GetPointLights()[1];
+	constantPSStruct->gPointLight[2] = lightManager->GetPointLights()[2];
 	constantPSStruct->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
 	constantPSStruct->gCamPos = XMLoadFloat3(&camera->GetPosition());
 
