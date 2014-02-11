@@ -16,6 +16,8 @@ struct VertexIn
 {
 	float3 pos : POSITION;
 	float3 norm : NORMAL;
+	float3 tang : TANGENT;
+	float3 binorm : BINORMAL;
 	float2 tex : TEXCOORD0;
 };
 
@@ -24,6 +26,8 @@ struct PixelIn
 	float4 pos : SV_POSITION;
 	float3 norm : NORMAL;
 	float3 posWorld : POSITION;
+	float3 tang : TANGENT;
+	float3 binorm : BINORMAL;
 	float2 tex : TEXCOORD0;
 };
 
@@ -36,6 +40,8 @@ PixelIn main(VertexIn input)
 	output.pos = mul(gProj, output.pos);
 
 	output.norm = mul((float3x3)gWorld, input.norm);
+	output.tang = mul((float3x3)gWorld, input.tang);
+	output.binorm = mul((float3x3)gWorld, input.binorm);
 	output.tex = input.tex;
 	return output;
 }

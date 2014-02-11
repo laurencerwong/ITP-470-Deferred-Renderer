@@ -21,8 +21,8 @@ bool Renderer::Init()
 		return false;
 	loader = new SceneLoader(md3dDevice);
 
-	loader->LoadFile("land1specular.obj");
-	loader->LoadFile("temp2.obj");
+	loader->LoadFile("normalMappedBox.obj");
+	//loader->LoadFile("temp2.obj");
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights
@@ -32,6 +32,7 @@ bool Renderer::Init()
 	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(30.0f, 20.0f, 5.0f), 5.0f, 72.0f);
 	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-30.0f, 20.0f, 5.0f), 5.0f, 72.0f);
 	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 20.0f, 35.0f), 5.0f, 72.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -20.0f, 0.0f), 5.0f, 72.0f);
 
 	return true;
 }
@@ -47,7 +48,7 @@ void Renderer::UpdateScene(float dt)
 {
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
-		//object->Update(dt);
+		object->Update(dt);
 	}
 	lightManager->Update(dt);
 	int size = sizeof(DirectionalLight);
@@ -86,6 +87,7 @@ void Renderer::DrawScene()
 	constantPSStruct->gPointLight[0] = lightManager->GetPointLights()[0];
 	constantPSStruct->gPointLight[1] = lightManager->GetPointLights()[1];
 	constantPSStruct->gPointLight[2] = lightManager->GetPointLights()[2];
+	constantPSStruct->gPointLight[3] = lightManager->GetPointLights()[3];
 	constantPSStruct->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
 	constantPSStruct->gCamPos = XMLoadFloat3(&camera->GetPosition());
 

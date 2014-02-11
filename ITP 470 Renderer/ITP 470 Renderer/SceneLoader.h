@@ -10,6 +10,8 @@ struct Vertex
 {
 	XMFLOAT3 Pos;
 	XMFLOAT3 Normal;
+	XMFLOAT3 Tangent;
+	XMFLOAT3 Bitangent;
 	XMFLOAT2 Tex0;
 
 	inline void LoadAiVector3D(XMFLOAT3& inLHSVector, const aiVector3D& inRHSVector)

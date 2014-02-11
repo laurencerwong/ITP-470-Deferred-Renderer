@@ -67,8 +67,11 @@ public:
 	void SetSamplerState(ID3D11SamplerState *inSamplerState)	{ textureSampler = inSamplerState; }
 	ID3D11SamplerState *GetSamplerState()				{ return textureSampler; }
 
-	void SetShaderResourceView(ID3D11ShaderResourceView *inShaderResourceView)	{ texture0View = inShaderResourceView; }
-	ID3D11ShaderResourceView *GetShaderResourceView()	{ return texture0View; }
+	void SetDiffuseResourceView(ID3D11ShaderResourceView *inShaderResourceView)	{ texture0View = inShaderResourceView; }
+	ID3D11ShaderResourceView *GetDiffuseResourceView()	{ return texture0View; }
+
+	void SetNormalResourceView(ID3D11ShaderResourceView *inShaderResourceView)	{ textureNormView = inShaderResourceView; }
+	ID3D11ShaderResourceView *GetNormalResourceView()	{ return textureNormView; }
 
 	void SetMaterial(const aiColor3D &inAmbient, const aiColor3D &inDiffuse, const aiColor3D &inSpecular, float inShininess)
 	{
@@ -107,5 +110,6 @@ private:
 	ID3D11PixelShader			*pixelShader;
 	ID3D11SamplerState			*textureSampler;
 	ID3D11ShaderResourceView	*texture0View;
+	ID3D11ShaderResourceView	*textureNormView;
 
 };

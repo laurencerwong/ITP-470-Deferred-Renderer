@@ -19,8 +19,54 @@ SceneLoader::~SceneLoader()
 
 void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObject, const aiScene *inScene)
 {
-	aiString texPath;
+	aiString texPath, normTexPath;
 	aiReturn hasTex = inScene->mMaterials[inIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
+	if (hasTex == AI_SUCCESS)
+	{
+		wchar_t texPathW[150];
+		MultiByteToWideChar(CP_ACP, 0, texPath.C_Str(), -1, texPathW, 150);
+
+		ID3D11Resource *texture0, *textureNorm;
+		ID3D11ShaderResourceView *newShaderResourceView, *newNormalMapShaderResourceView;
+		HRESULT hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &texture0, &newShaderResourceView);
+		if (FAILED(hr))
+		{
+			CreateDDSTextureFromFile(d3dDevice, L"texture_missing.dds", &texture0, &newShaderResourceView);
+		}
+		std::string normTexPath = texPath.C_Str();
+		normTexPath.resize(normTexPath.length() - 4); // remove the .dds
+		normTexPath += "_normal.dds";
+		MultiByteToWideChar(CP_ACP, 0, normTexPath.c_str(), -1, texPathW, 150);
+
+		hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &textureNorm, &newNormalMapShaderResourceView);
+		if (FAILED(hr))
+		{
+			CreateDDSTextureFromFile(d3dDevice, L"texture_missing.dds", &textureNorm, &newNormalMapShaderResourceView);
+		}
+
+		D3D11_SAMPLER_DESC textureSamplerDesc;
+		ZeroMemory(&textureSamplerDesc, sizeof(textureSamplerDesc));
+		textureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		textureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		textureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		textureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		textureSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		textureSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		ID3D11SamplerState *newSamplerState;
+		d3dDevice->CreateSamplerState(&textureSamplerDesc, &newSamplerState);
+
+		D3D11_TEXTURE2D_DESC textureDesc;
+		reinterpret_cast<ID3D11Texture2D*>(texture0)->GetDesc(&textureDesc);
+		texture0->Release();
+		reinterpret_cast<ID3D11Texture2D*>(textureNorm)->GetDesc(&textureDesc);
+		textureNorm->Release();
+
+		inObject.SetNormalResourceView(newNormalMapShaderResourceView);
+		inObject.SetDiffuseResourceView(newShaderResourceView);
+		inObject.SetSamplerState(newSamplerState);
+	}
+	hasTex = inScene->mMaterials[inIndex]->GetTexture(aiTextureType_NORMALS, 0, &texPath);
 	if (hasTex == AI_SUCCESS)
 	{
 		wchar_t texPathW[100];
@@ -49,7 +95,7 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 		reinterpret_cast<ID3D11Texture2D*>(texture0)->GetDesc(&textureDesc);
 		texture0->Release();
 
-		inObject.SetShaderResourceView(newShaderResourceView);
+		inObject.SetDiffuseResourceView(newShaderResourceView);
 		inObject.SetSamplerState(newSamplerState);
 	}
 	aiColor3D ambientColor, diffuseColor, specularColor;
@@ -78,10 +124,12 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
 	D3D11_INPUT_ELEMENT_DESC vertex1Desc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	d3dDevice->CreateInputLayout(vertex1Desc, 3, vertexShaderData->shaderByteData, vertexShaderData->size, &newInputLayout);
+	d3dDevice->CreateInputLayout(vertex1Desc, 5, vertexShaderData->shaderByteData, vertexShaderData->size, &newInputLayout);
 
 	//declare VS constant buffer description
 	D3D11_BUFFER_DESC perObjectConstantBufferDesc;
@@ -129,6 +177,12 @@ void LoadVertices(const aiMesh &inMesh, std::vector<Vertex> &convertedVertices)
 		{
 			newVertex.LoadAiVector3D(newVertex.Tex0, inMesh.mTextureCoords[0][i]);
 			newVertex.Tex0.y = 1.0 - newVertex.Tex0.y;
+		}
+		if (inMesh.HasTangentsAndBitangents())
+		{
+			newVertex.LoadAiVector3D(newVertex.Tangent, inMesh.mTangents[i]);
+			//newVertex.Tangent.z = -newVertex.Tangent.z;
+			newVertex.LoadAiVector3D(newVertex.Bitangent, inMesh.mBitangents[i]);
 		}
 
 		convertedVertices.push_back(newVertex);
@@ -201,6 +255,7 @@ bool SceneLoader::LoadFile(const char* filename)
 	Assimp::Importer importer;
 
 	const aiScene *scene = importer.ReadFile(filename, 0);
+	scene = importer.ApplyPostProcessing(aiProcess_CalcTangentSpace | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_JoinIdenticalVertices);
 	if (!scene)
 	{
 		std::stringstream oss;

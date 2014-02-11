@@ -7,7 +7,7 @@
 
 
 DrawableObject::DrawableObject() :
-mPosition(0.0f, -1.0f, 10.0f),
+mPosition(0.0f, 0.0f, 0.0f),
 mRotationAmount(0.0f)
 {
 }
@@ -51,6 +51,7 @@ void DrawableObject::Draw(ID3D11DeviceContext* d3dDeviceContext)
 
 	d3dDeviceContext->PSSetSamplers(0, 1, &textureSampler);
 	d3dDeviceContext->PSSetShaderResources(0, 1, &texture0View);
+	d3dDeviceContext->PSSetShaderResources(1, 1, &textureNormView);
 
 	for (std::tuple<ID3D11Buffer*, ID3D11Buffer*, int> part : mParts)
 	{

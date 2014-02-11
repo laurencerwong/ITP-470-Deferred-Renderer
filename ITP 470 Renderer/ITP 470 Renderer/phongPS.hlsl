@@ -1,4 +1,5 @@
-Texture2D gDiffuseTexture;
+Texture2D gDiffuseTexture : register(t0);
+Texture2D gNormalTexture : register(t1);
 
 struct DirectionalLight
 {
@@ -26,7 +27,7 @@ struct Material
 cbuffer cbPerFrame : register(b0)
 {
 	DirectionalLight gDirLight;
-	PointLight pointLight[3];
+	PointLight pointLight[4];
 	float4 gAmbientColor;
 	float3 gCamPos;
 }
@@ -48,6 +49,8 @@ struct PixelIn
 	float4 pos : SV_POSITION;
 	float3 norm : NORMAL;
 	float3 posWorld : POSITION;
+	float3 tang : TANGENT;
+	float3 binorm : BINORMAL;
 	float2 tex : TEXCOORD0;
 };
 
@@ -96,8 +99,21 @@ void CalculatePointLight(PointLight inLight, float3 inNorm, float3 inPos, float3
 float4 main(PixelIn input) : SV_TARGET
 {
 	input.norm = normalize(input.norm);
-	float3 pixToCamera = normalize(gCamPos - input.posWorld);
-	float4 texColor = gDiffuseTexture.Sample(DiffuseTextureSampler, input.tex);
+	//calculate NTB
+	float3 transformedTang = normalize(input.tang - dot(input.tang, input.norm) * input.norm);
+		float3 bitang = normalize(input.binorm);//cross(input.norm, transformedTang);
+	float3x3 NTB = float3x3(transformedTang, bitang, input.norm);
+
+
+		float3 pixToCamera = normalize(gCamPos - input.posWorld);
+		float4 texColor = gDiffuseTexture.Sample(DiffuseTextureSampler, input.tex);
+		float3 normSample = gNormalTexture.Sample(DiffuseTextureSampler, input.tex).rgb;
+		normSample = 2.0f*normSample - 1.0f;
+	//float3 normalBump = mul(NTB, normSample);
+
+	
+	input.norm = normalize(mul(normSample, NTB));
+
 	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -112,13 +128,12 @@ float4 main(PixelIn input) : SV_TARGET
 	}	
 	float4 finalColor = texColor * (ambient + diffuse) + specular;
 		[unroll]
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
 		CalculatePointLight(pointLight[i], input.norm, input.posWorld, pixToCamera, diffuse, specular);
 		finalColor += diffuse;
 		finalColor += specular;
 	}
-
 	
 	finalColor.w = 1.0f;
 	return finalColor;
