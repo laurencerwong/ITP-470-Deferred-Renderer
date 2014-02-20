@@ -27,9 +27,12 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
+	void DrawDepthStencil();
 	void DeclareShaderConstants(ID3D11Device* d3dDevice);
+	void CreateDepthStencilState(ID3D11Device* d3dDevice);
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 
+	bool mUpdateObjects;
 	SceneLoader *loader;
 	Camera *camera;
 	LightManager *lightManager;
@@ -40,4 +43,5 @@ public:
 	ID3D11PixelShader* colorPS;
 	ID3D11Buffer* perFrameVSConstantBuffer;
 	ID3D11Buffer* perFramePSConstantBuffer;
+	ID3D11DepthStencilState* mNoDoubleBlendDSS;
 };
