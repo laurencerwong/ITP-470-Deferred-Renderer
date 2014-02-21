@@ -101,33 +101,34 @@ float4 main(PixelIn input) : SV_TARGET
 	input.norm = normalize(input.norm);
 	//calculate NTB
 	float3 transformedTang = normalize(input.tang - dot(input.tang, input.norm) * input.norm);
-		float3 bitang = normalize(input.binorm);//cross(input.norm, transformedTang);
+		float3 bitang = normalize(input.binorm);
 	float3x3 NTB = float3x3(transformedTang, bitang, input.norm);
-
 
 		float3 pixToCamera = normalize(gCamPos - input.posWorld);
 		float4 texColor = gDiffuseTexture.Sample(DiffuseTextureSampler, input.tex);
 		float3 normSample = gNormalTexture.Sample(DiffuseTextureSampler, input.tex).rgb;
 		normSample = 2.0f*normSample - 1.0f;
-	//float3 normalBump = mul(NTB, normSample);
 
-	
-	input.norm = normalize(mul(normSample, NTB));
+	input.norm = normalize(mul(normSample,  NTB));
 
 	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	ambient = gAmbientColor * gMaterial.mAmbient;
-	float NdotL = max(dot(input.norm, normalize(-gDirLight.mPosition)), 0.0);
-	if (NdotL > 0.0f)
+	if (gDirLight.mColor.a > 0)
 	{
-		float3 reflection = reflect(normalize(gDirLight.mPosition), input.norm);
-		float dirSpecFactor = pow(max(dot(reflection, pixToCamera), 0.0f), gMaterial.mSpecular.w);
-		diffuse = gDirLight.mColor * NdotL *gMaterial.mDiffuse;
-		specular = saturate(gDirLight.mSpecularColor * dirSpecFactor * gMaterial.mSpecular);
-	}	
+		float NdotL = max(dot(input.norm, normalize(-gDirLight.mPosition)), 0.0);
+		if (NdotL > 0.0f)
+		{
+			float3 reflection = reflect(normalize(gDirLight.mPosition), input.norm);
+				float dirSpecFactor = pow(max(dot(reflection, pixToCamera), 0.0f), gMaterial.mSpecular.w);
+			diffuse = gDirLight.mColor * NdotL *gMaterial.mDiffuse;
+			specular = saturate(gDirLight.mSpecularColor * dirSpecFactor * gMaterial.mSpecular);
+		}
+	}
+
 	float4 finalColor = texColor * (ambient + diffuse) + specular;
-		[unroll]
+	[unroll]
 	for (int i = 0; i < 4; ++i)
 	{
 		CalculatePointLight(pointLight[i], input.norm, input.posWorld, pixToCamera, diffuse, specular);

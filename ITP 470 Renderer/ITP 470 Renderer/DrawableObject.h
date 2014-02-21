@@ -81,9 +81,20 @@ public:
 		mMaterial.mShininess = inShininess;
 	}
 
-	void AddPart(ID3D11Buffer *inVertexBuffer, ID3D11Buffer *inIndexBuffer, int inNumIndices)
+	void SetPosition(const XMFLOAT3 &inPosition) { mPosition = inPosition; }
+
+	void SetRotation(const XMFLOAT4 &inRotation) { mRotation = inRotation; }
+
+	void SetScale(float inScale) { mScale = inScale; }
+
+	void AddPart(UINT inVertexBufferStart, UINT inIndexBufferStart, int inNumIndices, unsigned int inMaterialIndex)
 	{
-		mParts.push_back(std::make_tuple(inVertexBuffer, inIndexBuffer, inNumIndices));
+		mParts.push_back(std::make_tuple(inVertexBufferStart, inIndexBufferStart, inNumIndices, inMaterialIndex));
+	}
+
+	void AddTexture(ID3D11ShaderResourceView* inDiffuseResourceView, ID3D11ShaderResourceView* inNormalResourceView)
+	{
+		mTextures.push_back(std::make_tuple(inDiffuseResourceView, inNormalResourceView));
 	}
 
 private:
@@ -99,7 +110,9 @@ private:
 	int			numIndices;
 	UINT		mVertexBufferStride;
 
-	std::vector<std::tuple<ID3D11Buffer*, ID3D11Buffer*, int> > mParts;
+	//std::vector<std::tuple<ID3D11Buffer*, ID3D11Buffer*, int> > mParts;
+	std::vector<std::tuple<UINT, UINT, int, unsigned int> > mParts;
+	std::vector<std::tuple<ID3D11ShaderResourceView*, ID3D11ShaderResourceView*> > mTextures; //diffuse + normal texture
 
 	ID3D11Buffer				*vertexBuffer;
 	ID3D11Buffer				*indexBuffer;

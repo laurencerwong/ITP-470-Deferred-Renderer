@@ -24,24 +24,38 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 	if (hasTex == AI_SUCCESS)
 	{
 		wchar_t texPathW[150];
+
+		//std::string texPathString = "dabrovic-sponza/01_STUB.dds";
+
 		MultiByteToWideChar(CP_ACP, 0, texPath.C_Str(), -1, texPathW, 150);
 
-		ID3D11Resource *texture0, *textureNorm;
-		ID3D11ShaderResourceView *newShaderResourceView, *newNormalMapShaderResourceView;
-		HRESULT hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &texture0, &newShaderResourceView);
+		ID3D11Resource *texture, *textureNorm;
+		ID3D11ShaderResourceView *newDiffuseShaderResourceView, *newNormalMapShaderResourceView;
+		HRESULT hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &texture, &newDiffuseShaderResourceView);
 		if (FAILED(hr))
 		{
-			CreateDDSTextureFromFile(d3dDevice, L"texture_missing.dds", &texture0, &newShaderResourceView);
+			CreateDDSTextureFromFile(d3dDevice, L"texture_missing.dds", &texture, &newDiffuseShaderResourceView);
+			std::stringstream oss;
+			oss << "ERROR - Texture: " << texPathW << " not found." << std::endl;
+			std::string debugMsg(oss.str());
+			OutputDebugStringA(debugMsg.c_str());
 		}
-		std::string normTexPath = texPath.C_Str();
+		std::string normTexPath = std::string(texPath.C_Str());
 		normTexPath.resize(normTexPath.length() - 4); // remove the .dds
 		normTexPath += "_normal.dds";
+
+		//normTexPath = "dabrovic-sponza/01_STUB_normal.dds";
+
 		MultiByteToWideChar(CP_ACP, 0, normTexPath.c_str(), -1, texPathW, 150);
 
 		hr = CreateDDSTextureFromFile(d3dDevice, texPathW, &textureNorm, &newNormalMapShaderResourceView);
 		if (FAILED(hr))
 		{
-			CreateDDSTextureFromFile(d3dDevice, L"texture_missing.dds", &textureNorm, &newNormalMapShaderResourceView);
+			std::stringstream oss;
+			oss << "ERROR - Normal Texture: " << texPathW << " not found." << std::endl;
+			std::string debugMsg(oss.str());
+			OutputDebugStringA(debugMsg.c_str());
+			CreateDDSTextureFromFile(d3dDevice, L"texture_missing_normal.dds", &textureNorm, &newNormalMapShaderResourceView);
 		}
 
 		D3D11_SAMPLER_DESC textureSamplerDesc;
@@ -57,13 +71,12 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 		d3dDevice->CreateSamplerState(&textureSamplerDesc, &newSamplerState);
 
 		D3D11_TEXTURE2D_DESC textureDesc;
-		reinterpret_cast<ID3D11Texture2D*>(texture0)->GetDesc(&textureDesc);
-		texture0->Release();
+		reinterpret_cast<ID3D11Texture2D*>(texture)->GetDesc(&textureDesc);
+		texture->Release();
 		reinterpret_cast<ID3D11Texture2D*>(textureNorm)->GetDesc(&textureDesc);
 		textureNorm->Release();
 
-		inObject.SetNormalResourceView(newNormalMapShaderResourceView);
-		inObject.SetDiffuseResourceView(newShaderResourceView);
+		inObject.AddTexture(newDiffuseShaderResourceView, newNormalMapShaderResourceView);
 		inObject.SetSamplerState(newSamplerState);
 	}
 	hasTex = inScene->mMaterials[inIndex]->GetTexture(aiTextureType_NORMALS, 0, &texPath);
@@ -110,9 +123,18 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 
 void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
 {
-	shaderData *vertexShaderData, *pixelShaderData;
-	vertexShaderData = FileReaderWriter::ReadShader("phongVS.cso");
-	pixelShaderData = FileReaderWriter::ReadShader("phongPS.cso");
+	ShaderBinaryData *vertexShaderData, *pixelShaderData;
+	bool shaderReadSuccessful;
+	shaderReadSuccessful = FileReaderWriter::ReadShader("phongVS.cso", vertexShaderData);
+	if (!shaderReadSuccessful)
+	{
+
+	}
+	shaderReadSuccessful = FileReaderWriter::ReadShader("phongPS.cso", pixelShaderData);
+	if (!shaderReadSuccessful)
+	{
+
+	}
 
 	ID3D11VertexShader *newVertexShader;
 	ID3D11PixelShader *newPixelShader;
@@ -201,29 +223,33 @@ void LoadIndices(const aiMesh &inMesh, std::vector<UINT> &convertedIndices)
 }
 
 
-bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject &inObject)
+bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject &inObject, std::vector<Vertex> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex)
 {
-	std::vector<Vertex>tempVertexList;
-	std::vector<UINT>tempIndexList;
 
-	LoadVertices(inMesh, tempVertexList);
-	LoadIndices(inMesh, tempIndexList);
+	int inPrevIndexListSize = inIndexList.size();
+	int inPrevVertexListSize = inVertexList.size();
 
-	inObject.SetNumIndicies(tempIndexList.size());
+	LoadVertices(inMesh, inVertexList);
+	LoadIndices(inMesh, inIndexList);
 
-	inObject.SetVertexBufferStride(sizeof(Vertex));
+	inObject.AddPart(inIndexList.size() - inPrevIndexListSize, inPrevIndexListSize, inPrevVertexListSize, inMaterialIndex);
+
+	return true;
+}
+
+void finalizeVertexAndIndexBuffer(ID3D11Device *ind3dDevice, DrawableObject &inObject, std::vector<Vertex> &inVertexList, std::vector<UINT> &inIndexList)
+{
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.ByteWidth = sizeof(Vertex)* tempVertexList.size();
+	vertexBufferDesc.ByteWidth = sizeof(Vertex)* inVertexList.size();
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
-
-
+	
 	D3D11_SUBRESOURCE_DATA vertexInitData;
-	vertexInitData.pSysMem = &tempVertexList[0];
+	vertexInitData.pSysMem = &inVertexList[0];
 
 	ID3D11Buffer *newVertexBuffer, *newIndexBuffer;
 
@@ -231,26 +257,22 @@ bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject
 
 	D3D11_BUFFER_DESC indicesBufferDesc;
 	indicesBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indicesBufferDesc.ByteWidth = sizeof(UINT)* tempIndexList.size();
+	indicesBufferDesc.ByteWidth = sizeof(UINT)* inIndexList.size();
 	indicesBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	indicesBufferDesc.CPUAccessFlags = 0;
 	indicesBufferDesc.MiscFlags = 0;
 	indicesBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA indexInitData;
-	indexInitData.pSysMem = &tempIndexList[0];
+	indexInitData.pSysMem = &inIndexList[0];
 
 	ind3dDevice->CreateBuffer(&indicesBufferDesc, &indexInitData, &newIndexBuffer);
 
 	inObject.SetVertexBuffer(newVertexBuffer);
 	inObject.SetIndexBuffer(newIndexBuffer);
-
-	inObject.AddPart(newVertexBuffer, newIndexBuffer, tempIndexList.size());
-
-	return true;
 }
 
-bool SceneLoader::LoadFile(const char* filename)
+int SceneLoader::LoadFile(const char* filename)
 {
 	Assimp::Importer importer;
 
@@ -265,6 +287,9 @@ bool SceneLoader::LoadFile(const char* filename)
 		return false;
 	}
 	DrawableObject *newObject = new DrawableObject();
+	std::vector<Vertex> vertexList;
+	std::vector<UINT> indexList;
+	std::stringstream oss;
 	for (unsigned int i = 0; i < scene->mRootNode->mNumChildren; ++i)
 	{
 		bool successfulLoad = true;
@@ -272,10 +297,21 @@ bool SceneLoader::LoadFile(const char* filename)
 		BuildShaders(d3dDevice, *newObject);
 		for (unsigned int j = 0; j < currentNode->mNumMeshes; ++j)
 		{
-			ProcessMesh(d3dDevice, *scene->mMeshes[currentNode->mMeshes[j]], *newObject);
-			LoadMaterials(d3dDevice, scene->mMeshes[currentNode->mMeshes[j]]->mMaterialIndex, *newObject, scene);
+			ProcessMesh(d3dDevice, *scene->mMeshes[currentNode->mMeshes[j]], *newObject, vertexList, indexList, scene->mMeshes[currentNode->mMeshes[j]]->mMaterialIndex - 1);
+			//LoadMaterials(d3dDevice, scene->mMeshes[currentNode->mMeshes[j]]->mMaterialIndex, *newObject, scene);
+			oss << "MatIndex = " << scene->mMeshes[currentNode->mMeshes[j]]->mMaterialIndex << "\n";
 		}
 	}
+	std::string debugMsg(oss.str());
+	OutputDebugStringA(debugMsg.c_str());
+	for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
+	{
+		LoadMaterials(d3dDevice, i, *newObject, scene);
+	}
+	newObject->SetNumIndicies(indexList.size());
+	newObject->SetVertexBufferStride(sizeof(Vertex));
+	finalizeVertexAndIndexBuffer(d3dDevice, *newObject, vertexList, indexList);
 	mDrawableObjects.push_back(newObject);
-	return true;
+
+	return mDrawableObjects.size() - 1;
 }

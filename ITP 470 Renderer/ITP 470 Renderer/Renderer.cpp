@@ -19,20 +19,25 @@ bool Renderer::Init()
 {
 	if (!D3DApp::Init())
 		return false;
-	loader = new SceneLoader(md3dDevice);
+	shaderManager = new ShaderManager(md3dDevice, md3dImmediateContext);
+	loader = new SceneLoader(md3dDevice, shaderManager);
 
-	loader->LoadFile("sponza.obj");
+	int sponza = loader->LoadFile("sponza.obj");
+	loader->GetDrawableObject(sponza)->SetScale(2.0f);
+	//loader->LoadFile("normalMappedBox.obj");
 	//loader->LoadFile("temp2.obj");
 	DeclareShaderConstants(md3dDevice);
 
 	//init default lights
-	lightManager->CreateDirectionalLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(20.0f, -5.0f, 0.0f));
+	lightManager->CreateDirectionalLight(XMFLOAT4(1.0f, 0.78f, 0.5f, 1.0f), XMFLOAT3(5.0f, 0.0f, 0.0f));
 
 
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.8f, 1.0f), XMFLOAT3(0.0f, 5.0f, 0.0f), 1.0f, 36.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 10.0f, 0.0f), 1.0f, 36.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-5.0f, 0.0f, 0.0f), 1.0f, 36.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), 1.0f, 36.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-5.0f, -100.0f, 0.0f), 1.0f, 36.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
+
+	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
 
 	return true;
 }
@@ -46,6 +51,7 @@ void Renderer::OnResize()
 
 void Renderer::UpdateScene(float dt)
 {
+	mUpdateObjects = true;
 	if (mUpdateObjects)
 	{
 		for (DrawableObject* object : loader->GetDrawableObjects())
@@ -90,7 +96,13 @@ void Renderer::DrawScene()
 	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
 	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
+	//constantVSMatrix->mProj = XMMatrixOrthographicLH(64, 48, 0.1f, 500.0f);
 	constantVSMatrix->mView = camera->GetViewMatrix();
+	/*
+	XMVECTOR eyePosition = XMLoadFloat3(&lightManager->GetDirectionalLights()[0].mDirection) * g_XMNegativeOne * 2.0f;
+	XMVECTOR up = XMLoadFloat3(&XMFLOAT3(0.0f, 1.0f, 0.0f));//XMVector3Cross(XMVector3Normalize(XMLoadFloat3(&lightManager->GetDirectionalLights()[0].mDirection)), g_XMMaskZ);
+	constantVSMatrix->mView = XMMatrixLookAtLH(eyePosition, g_XMZero, up);
+	*/
 	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
 
@@ -107,6 +119,8 @@ void Renderer::DrawScene()
 	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
 	
+	//shadowMap->BindDepthStencilViewAndSetNullRenderTarget(md3dImmediateContext);
+
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
 		object->Draw(md3dImmediateContext);

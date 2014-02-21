@@ -2,6 +2,8 @@
 #include "SceneLoader.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "ShaderManager.h"
+#include "ShadowMap.h"
 
 struct perFrameCBStruct
 {
@@ -36,6 +38,7 @@ public:
 	SceneLoader *loader;
 	Camera *camera;
 	LightManager *lightManager;
+	ShaderManager *shaderManager;
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
 	ID3D11InputLayout *mInputLayout;
@@ -44,4 +47,6 @@ public:
 	ID3D11Buffer* perFrameVSConstantBuffer;
 	ID3D11Buffer* perFramePSConstantBuffer;
 	ID3D11DepthStencilState* mNoDoubleBlendDSS;
+
+	ShadowMap *shadowMap;
 };

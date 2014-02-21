@@ -1,15 +1,15 @@
 #pragma once
 
-struct shaderData
+struct ShaderBinaryData
 {
 	unsigned char *shaderByteData;
 	unsigned int size;
 
-	~shaderData() { delete[] shaderByteData; }
+	~ShaderBinaryData() { delete[] shaderByteData; }
 };
 
 namespace FileReaderWriter
 {
-	shaderData* ReadShader(const char* filename);
+	bool ReadShader(const char* filename, ShaderBinaryData* &inData);
 }
 

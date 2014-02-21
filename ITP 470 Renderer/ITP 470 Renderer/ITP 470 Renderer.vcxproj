@@ -93,6 +93,8 @@
     <ClCompile Include="DrawableObject.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -107,6 +109,8 @@
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SceneLoader.h" />
+    <ClInclude Include="ShaderManager.h" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="VertexUtil.h" />
   </ItemGroup>
   <ItemGroup>
