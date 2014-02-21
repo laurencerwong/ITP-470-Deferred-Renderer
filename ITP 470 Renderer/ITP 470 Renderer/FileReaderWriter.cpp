@@ -4,7 +4,7 @@
 
 bool FileReaderWriter::ReadShader(const char* filename, ShaderBinaryData* &inData)
 {
-	FILE* file;
+	FILE* file = nullptr;
 	fopen_s(&file, filename, "rb"); //rb is to open the file as binary
 	if (file != NULL)
 	{

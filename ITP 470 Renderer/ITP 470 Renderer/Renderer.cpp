@@ -32,8 +32,8 @@ bool Renderer::Init()
 	lightManager->CreateDirectionalLight(XMFLOAT4(1.0f, 0.78f, 0.5f, 1.0f), XMFLOAT3(5.0f, 0.0f, 0.0f));
 
 
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 5.0f, -5.0f), 1.0f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.8f, 0.0f, 0.8f, 1.0f), XMFLOAT3(15.0f, 15.0f, -5.0f), 1.0f, 8.0f);
 	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-5.0f, -100.0f, 0.0f), 1.0f, 36.0f);
 	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
 
@@ -51,7 +51,7 @@ void Renderer::OnResize()
 
 void Renderer::UpdateScene(float dt)
 {
-	mUpdateObjects = true;
+	//mUpdateObjects = true;
 	if (mUpdateObjects)
 	{
 		for (DrawableObject* object : loader->GetDrawableObjects())

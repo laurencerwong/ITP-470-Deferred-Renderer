@@ -27,11 +27,17 @@ public:
 	void	UpdateMouseWheel(USHORT inMouseWheelDelta);
 
 private:
+
+	void	DoOrbitalRotation(float dt);
+	void	DoFirstPersonRotation(float dt);
+
 	XMFLOAT2 mMouseCoordinates;
 
 	XMFLOAT3 mPosition;
 	XMFLOAT3 mTarget;
 	XMFLOAT3 mUp;
+	
+	XMFLOAT3 mDirection;
 
 	XMFLOAT4X4 mView;
 
