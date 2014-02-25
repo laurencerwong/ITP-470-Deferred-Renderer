@@ -6,6 +6,8 @@
 #include <tuple>
 #include "assimp/include/mesh.h"
 #include "assimp/include/scene.h"
+#include "ShaderManager.h"
+#include "MeshData.h"
 
 
 
@@ -30,21 +32,14 @@ struct perObjectCBPSStruct
 class DrawableObject
 {
 public:
-	DrawableObject();
+	DrawableObject(ShaderManager *inShaderManager);
 
 	~DrawableObject();
 	void Draw(ID3D11DeviceContext* d3dDeviceContext);
 	void Update(float deltaTime);
 	void LoadFromString(std::string const& file, ID3D11Device* d3dDevice);
 
-	void SetVertexBuffer(ID3D11Buffer *inBuffer)		{ vertexBuffer = inBuffer; }
-	ID3D11Buffer* GetVertexBuffer()						{ return vertexBuffer; }
-
-	void SetIndexBuffer(ID3D11Buffer *inBuffer)			{ indexBuffer = inBuffer; }
-	ID3D11Buffer* GetIndexBuffer()						{ return indexBuffer; }
-
-	void SetNumIndicies(int inNumIndices)				{ numIndices = inNumIndices; }
-	int	GetNumIndices()									{ return numIndices; }
+	MeshData* GetMeshData()								{ return mMeshData; }
 
 	void SetVSConstantBuffer(ID3D11Buffer *inBuffer)		{ perObjectVSCB = inBuffer; }
 	ID3D11Buffer* GetVSConstantBuffer()					{ return perObjectVSCB; }
@@ -52,17 +47,8 @@ public:
 	void SetPSConstantBuffer(ID3D11Buffer *inBuffer)		{ perObjectPSCB = inBuffer; }
 	ID3D11Buffer* GetPSConstantBuffer()					{ return perObjectPSCB; }
 
-	void SetInputLayout(ID3D11InputLayout *inLayout)	{ inputLayout = inLayout; }
-	ID3D11InputLayout* GetInputLayout()					{ return inputLayout; }
-
-	void SetVertexBufferStride(UINT inStride)			{ mVertexBufferStride = inStride; }
-	UINT GetVertexBufferStride()						{ return mVertexBufferStride; }
-
-	void SetVertexShader(ID3D11VertexShader *inVertexShader)	{ vertexShader = inVertexShader; }
-	ID3D11VertexShader *GetVertexShader()				{ return vertexShader; }
-
-	void SetPixelShader(ID3D11PixelShader *inPixelShader)	{ pixelShader = inPixelShader; }
-	ID3D11PixelShader *GetPixelShader()					{ return pixelShader; }
+	void SetPixelShader(const std::string &inPixelShader) { pixelShaderID = inPixelShader; }
+	void SetVertexShader(const std::string &inVertexShader) { vertexShaderID = inVertexShader; }
 
 	void SetSamplerState(ID3D11SamplerState *inSamplerState)	{ textureSampler = inSamplerState; }
 	ID3D11SamplerState *GetSamplerState()				{ return textureSampler; }
@@ -107,22 +93,19 @@ private:
 	XMFLOAT3	mPosition;
 	float		mRotationAmount;
 	float		mScale;
-	int			numIndices;
-	UINT		mVertexBufferStride;
 
 	//std::vector<std::tuple<ID3D11Buffer*, ID3D11Buffer*, int> > mParts;
 	std::vector<std::tuple<UINT, UINT, int, unsigned int> > mParts;
 	std::vector<std::tuple<ID3D11ShaderResourceView*, ID3D11ShaderResourceView*> > mTextures; //diffuse + normal texture
 
-	ID3D11Buffer				*vertexBuffer;
-	ID3D11Buffer				*indexBuffer;
+	ShaderManager *mShaderManager;
+
+	MeshData *mMeshData;
+
 	ID3D11Buffer				*perObjectVSCB;
 	ID3D11Buffer				*perObjectPSCB;
-	ID3D11InputLayout			*inputLayout;
-	ID3D11VertexShader			*vertexShader;
-	ID3D11PixelShader			*pixelShader;
 	ID3D11SamplerState			*textureSampler;
 	ID3D11ShaderResourceView	*texture0View;
 	ID3D11ShaderResourceView	*textureNormView;
-
+	std::string vertexShaderID, pixelShaderID;
 };

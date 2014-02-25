@@ -38,6 +38,8 @@ bool Renderer::Init()
 	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
 
 	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
+	texturedQuad = new TexturedQuad(shaderManager);
+	texturedQuad->Initialize(md3dDevice);
 
 	return true;
 }
@@ -98,11 +100,6 @@ void Renderer::DrawScene()
 	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
 	//constantVSMatrix->mProj = XMMatrixOrthographicLH(64, 48, 0.1f, 500.0f);
 	constantVSMatrix->mView = camera->GetViewMatrix();
-	/*
-	XMVECTOR eyePosition = XMLoadFloat3(&lightManager->GetDirectionalLights()[0].mDirection) * g_XMNegativeOne * 2.0f;
-	XMVECTOR up = XMLoadFloat3(&XMFLOAT3(0.0f, 1.0f, 0.0f));//XMVector3Cross(XMVector3Normalize(XMLoadFloat3(&lightManager->GetDirectionalLights()[0].mDirection)), g_XMMaskZ);
-	constantVSMatrix->mView = XMMatrixLookAtLH(eyePosition, g_XMZero, up);
-	*/
 	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
 
@@ -119,13 +116,13 @@ void Renderer::DrawScene()
 	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
 	
-	//shadowMap->BindDepthStencilViewAndSetNullRenderTarget(md3dImmediateContext);
-
+	//texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
 		object->Draw(md3dImmediateContext);
 	}
-
+	//SetBackBufferRenderTarget();
+	//texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 	HR(mSwapChain->Present(0, 0));
 }
 
@@ -169,4 +166,10 @@ void Renderer::CreateDepthStencilState(ID3D11Device* d3dDevice)
 	//don't need to worry about noDoubleBlendDesc.BackFace
 
 	d3dDevice->CreateDepthStencilState(&noDoubleBlendDesc, &mNoDoubleBlendDSS);
+}
+
+void Renderer::SetBackBufferRenderTarget()
+{
+	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+	return;
 }

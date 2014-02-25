@@ -60,6 +60,12 @@
     <ClCompile Include="ShadowMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TexturedQuad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -107,6 +113,15 @@
     <ClInclude Include="ShadowMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TexturedQuad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Effects\colorVS.hlsl">
@@ -119,6 +134,12 @@
       <Filter>Effect Files</Filter>
     </FxCompile>
     <FxCompile Include="phongPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="quadVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="quadPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
   </ItemGroup>

@@ -1,11 +1,8 @@
-﻿Build started 2/21/2014 1:51:11 PM.
+﻿Build started 2/25/2014 12:41:55 AM.
      1>Project "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\ITP 470 Renderer\ITP 470 Renderer.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Camera.cpp
-         Camera.cpp
-     1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\camera.cpp(22): warning C4101: 'leftVec' : unreferenced local variable
-     1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\camera.cpp(22): warning C4101: 'forwardVec' : unreferenced local variable
-     1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\camera.cpp(67): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Renderer.cpp
+         Renderer.cpp
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.exe" /INCREMENTAL /NOLOGO assimp.lib d3d11.lib D3DCompiler.lib Effects11d.lib dxgi.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.lib" /MACHINE:X86 Debug\Camera.obj
          Debug\DDSTextureLoader.obj
@@ -17,10 +14,12 @@
          Debug\LightManager.obj
          Debug\main.obj
          Debug\DrawableObject.obj
+         Debug\MeshData.obj
          Debug\Renderer.obj
          Debug\SceneLoader.obj
          Debug\ShaderManager.obj
          Debug\ShadowMap.obj
+         Debug\TexturedQuad.obj
          ITP 470 Renderer.vcxproj -> C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.exe
        PostBuildEvent:
          xcopy /y /d "assimp/bin" "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\"
@@ -30,4 +29,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.18
+Time Elapsed 00:00:01.53

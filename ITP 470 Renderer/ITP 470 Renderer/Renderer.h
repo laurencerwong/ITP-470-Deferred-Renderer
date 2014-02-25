@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "LightManager.h"
 #include "ShaderManager.h"
+#include "TexturedQuad.h"
 #include "ShadowMap.h"
 
 struct perFrameCBStruct
@@ -32,6 +33,7 @@ public:
 	void DrawDepthStencil();
 	void DeclareShaderConstants(ID3D11Device* d3dDevice);
 	void CreateDepthStencilState(ID3D11Device* d3dDevice);
+	void SetBackBufferRenderTarget();
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 
 	bool mUpdateObjects;
@@ -49,4 +51,5 @@ public:
 	ID3D11DepthStencilState* mNoDoubleBlendDSS;
 
 	ShadowMap *shadowMap;
+	TexturedQuad *texturedQuad;
 };

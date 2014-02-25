@@ -91,10 +91,12 @@
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DrawableObject.cpp" />
+    <ClCompile Include="MeshData.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="TexturedQuad.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -107,10 +109,13 @@
     <ClInclude Include="FrankLunaCode\MathHelper.h" />
     <ClInclude Include="DrawableObject.h" />
     <ClInclude Include="LightManager.h" />
+    <ClInclude Include="MeshData.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="TexturedQuad.h" />
+    <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexUtil.h" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +133,14 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.1</ShaderModel>
     </FxCompile>
     <FxCompile Include="phongVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="quadPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="quadVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
     </FxCompile>

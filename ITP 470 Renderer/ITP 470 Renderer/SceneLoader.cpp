@@ -7,6 +7,7 @@
 #include <sstream>
 #include "FileReaderWriter.h"
 #include "DrawableObject.h"
+#include "Vertex.h"
 
 SceneLoader::SceneLoader()
 {
@@ -121,27 +122,9 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 	inObject.SetMaterial(ambientColor, diffuseColor, specularColor, shininess);
 }
 
-void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
+void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject, ShaderManager* inShaderManager)
 {
-	ShaderBinaryData *vertexShaderData, *pixelShaderData;
-	bool shaderReadSuccessful;
-	shaderReadSuccessful = FileReaderWriter::ReadShader("phongVS.cso", vertexShaderData);
-	if (!shaderReadSuccessful)
-	{
-
-	}
-	shaderReadSuccessful = FileReaderWriter::ReadShader("phongPS.cso", pixelShaderData);
-	if (!shaderReadSuccessful)
-	{
-
-	}
-
-	ID3D11VertexShader *newVertexShader;
-	ID3D11PixelShader *newPixelShader;
-	ID3D11InputLayout *newInputLayout;
 	ID3D11Buffer *newVSConstantBuffer, *newPSConstantBuffer;
-	d3dDevice->CreateVertexShader(vertexShaderData->shaderByteData, vertexShaderData->size, nullptr, &newVertexShader);
-	d3dDevice->CreatePixelShader(pixelShaderData->shaderByteData, pixelShaderData->size, nullptr, &newPixelShader);
 
 	D3D11_INPUT_ELEMENT_DESC vertex1Desc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -151,7 +134,8 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	d3dDevice->CreateInputLayout(vertex1Desc, 5, vertexShaderData->shaderByteData, vertexShaderData->size, &newInputLayout);
+	inObject.SetVertexShader(inShaderManager->AddVertexShader("phongVS.cso", vertex1Desc, 5));
+	inObject.SetPixelShader(inShaderManager->AddPixelShader("phongPS.cso"));
 
 	//declare VS constant buffer description
 	D3D11_BUFFER_DESC perObjectConstantBufferDesc;
@@ -174,15 +158,8 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject)
 
 	d3dDevice->CreateBuffer(&perObjectConstantBufferDesc, NULL, &newPSConstantBuffer);
 
-
-	inObject.SetVertexShader(newVertexShader);
-	inObject.SetPixelShader(newPixelShader);
-	inObject.SetInputLayout(newInputLayout);
 	inObject.SetVSConstantBuffer(newVSConstantBuffer);
 	inObject.SetPSConstantBuffer(newPSConstantBuffer);
-
-	delete vertexShaderData;
-	delete pixelShaderData;
 }
 
 void LoadVertices(const aiMesh &inMesh, std::vector<Vertex> &convertedVertices)
@@ -237,41 +214,6 @@ bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject
 	return true;
 }
 
-void finalizeVertexAndIndexBuffer(ID3D11Device *ind3dDevice, DrawableObject &inObject, std::vector<Vertex> &inVertexList, std::vector<UINT> &inIndexList)
-{
-
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.ByteWidth = sizeof(Vertex)* inVertexList.size();
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-	
-	D3D11_SUBRESOURCE_DATA vertexInitData;
-	vertexInitData.pSysMem = &inVertexList[0];
-
-	ID3D11Buffer *newVertexBuffer, *newIndexBuffer;
-
-	ind3dDevice->CreateBuffer(&vertexBufferDesc, &vertexInitData, &(newVertexBuffer));
-
-	D3D11_BUFFER_DESC indicesBufferDesc;
-	indicesBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indicesBufferDesc.ByteWidth = sizeof(UINT)* inIndexList.size();
-	indicesBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	indicesBufferDesc.CPUAccessFlags = 0;
-	indicesBufferDesc.MiscFlags = 0;
-	indicesBufferDesc.StructureByteStride = 0;
-
-	D3D11_SUBRESOURCE_DATA indexInitData;
-	indexInitData.pSysMem = &inIndexList[0];
-
-	ind3dDevice->CreateBuffer(&indicesBufferDesc, &indexInitData, &newIndexBuffer);
-
-	inObject.SetVertexBuffer(newVertexBuffer);
-	inObject.SetIndexBuffer(newIndexBuffer);
-}
-
 int SceneLoader::LoadFile(const char* filename)
 {
 	Assimp::Importer importer;
@@ -286,7 +228,7 @@ int SceneLoader::LoadFile(const char* filename)
 		OutputDebugStringA(debugMsg.c_str());
 		return false;
 	}
-	DrawableObject *newObject = new DrawableObject();
+	DrawableObject *newObject = new DrawableObject(mShaderManager);
 	std::vector<Vertex> vertexList;
 	std::vector<UINT> indexList;
 	std::stringstream oss;
@@ -294,7 +236,7 @@ int SceneLoader::LoadFile(const char* filename)
 	{
 		bool successfulLoad = true;
 		aiNode* currentNode = scene->mRootNode->mChildren[i];
-		BuildShaders(d3dDevice, *newObject);
+		BuildShaders(d3dDevice, *newObject, mShaderManager);
 		for (unsigned int j = 0; j < currentNode->mNumMeshes; ++j)
 		{
 			ProcessMesh(d3dDevice, *scene->mMeshes[currentNode->mMeshes[j]], *newObject, vertexList, indexList, scene->mMeshes[currentNode->mMeshes[j]]->mMaterialIndex - 1);
@@ -308,9 +250,7 @@ int SceneLoader::LoadFile(const char* filename)
 	{
 		LoadMaterials(d3dDevice, i, *newObject, scene);
 	}
-	newObject->SetNumIndicies(indexList.size());
-	newObject->SetVertexBufferStride(sizeof(Vertex));
-	finalizeVertexAndIndexBuffer(d3dDevice, *newObject, vertexList, indexList);
+	newObject->GetMeshData()->Initialize(d3dDevice, vertexList, indexList);
 	mDrawableObjects.push_back(newObject);
 
 	return mDrawableObjects.size() - 1;
