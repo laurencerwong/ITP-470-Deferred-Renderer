@@ -142,5 +142,11 @@
     <FxCompile Include="quadPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
+    <FxCompile Include="depthVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="depthPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

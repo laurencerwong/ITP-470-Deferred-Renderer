@@ -98,6 +98,10 @@ void CalculatePointLight(PointLight inLight, float3 inNorm, float3 inPos, float3
 
 float4 main(PixelIn input) : SV_TARGET
 {
+//	float depth = 1.0f - input.pos.z / input.pos.w;
+	//return float4(depth, depth, depth, 1.0f);
+
+
 	input.norm = normalize(input.norm);
 	//calculate NTB
 	float3 transformedTang = normalize(input.tang - dot(input.tang, input.norm) * input.norm);

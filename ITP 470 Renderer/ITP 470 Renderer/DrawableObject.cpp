@@ -6,8 +6,7 @@
 #include "DDSTextureLoader/DDSTextureLoader.h"
 
 
-DrawableObject::DrawableObject(ShaderManager* inShaderManager) :
-mShaderManager(inShaderManager),
+DrawableObject::DrawableObject() :
 mPosition(0.0f, 0.0f, 0.0f),
 mRotationAmount(0.0f),
 mScale(1.0f)
@@ -25,13 +24,12 @@ void DrawableObject::Update(float deltaTime)
 	XMStoreFloat4(&mRotation, XMQuaternionRotationAxis(XMLoadFloat3(&XMFLOAT3(0.0f, 1.0f, 0.0f)), mRotationAmount));
 }
 
+
+
 void DrawableObject::Draw(ID3D11DeviceContext* d3dDeviceContext)
 {
 
 	d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	mShaderManager->SetVertexShader(vertexShaderID);
-	mShaderManager->SetPixelShader(pixelShaderID);
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	//set object vertex shader resources

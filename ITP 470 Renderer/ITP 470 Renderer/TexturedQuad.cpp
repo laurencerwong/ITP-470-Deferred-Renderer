@@ -43,7 +43,7 @@ void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 
 	InitializeVerticesAndIndices(vertices, indices);
 
-	mDraw = new DrawableObject(mShaderManager);
+	mDraw = new DrawableObject();
 	mDraw->GetMeshData()->Initialize(ind3dDevice, vertices, indices);
 
 	D3D11_INPUT_ELEMENT_DESC inputLayout[] = {

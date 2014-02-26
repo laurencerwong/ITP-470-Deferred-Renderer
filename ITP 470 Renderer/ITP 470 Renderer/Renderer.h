@@ -30,10 +30,15 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
+	void DrawPhong();
+	void DrawDepth();
 	void DrawDepthStencil();
 	void DeclareShaderConstants(ID3D11Device* d3dDevice);
 	void CreateDepthStencilState(ID3D11Device* d3dDevice);
 	void SetBackBufferRenderTarget();
+	void SetPerObjectVSCB();
+	void SetPerObjectPSCB();
+	void InitializeMiscShaders();
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 
 	int mSkybox;

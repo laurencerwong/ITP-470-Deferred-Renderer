@@ -6,7 +6,6 @@
 #include <tuple>
 #include "assimp/include/mesh.h"
 #include "assimp/include/scene.h"
-#include "ShaderManager.h"
 #include "MeshData.h"
 
 
@@ -32,12 +31,11 @@ struct perObjectCBPSStruct
 class DrawableObject
 {
 public:
-	DrawableObject(ShaderManager *inShaderManager);
+	DrawableObject();
 
 	~DrawableObject();
 	void Draw(ID3D11DeviceContext* d3dDeviceContext);
 	void Update(float deltaTime);
-	void LoadFromString(std::string const& file, ID3D11Device* d3dDevice);
 
 	MeshData* GetMeshData()								{ return mMeshData; }
 
@@ -49,15 +47,11 @@ public:
 
 	void SetPixelShader(const std::string &inPixelShader) { pixelShaderID = inPixelShader; }
 	void SetVertexShader(const std::string &inVertexShader) { vertexShaderID = inVertexShader; }
+	std::string GetPixelShader() { return pixelShaderID; }
+	std::string GetVertexShader() { return vertexShaderID; }
 
 	void SetSamplerState(ID3D11SamplerState *inSamplerState)	{ textureSampler = inSamplerState; }
 	ID3D11SamplerState *GetSamplerState()				{ return textureSampler; }
-
-	void SetDiffuseResourceView(ID3D11ShaderResourceView *inShaderResourceView)	{ texture0View = inShaderResourceView; }
-	ID3D11ShaderResourceView *GetDiffuseResourceView()	{ return texture0View; }
-
-	void SetNormalResourceView(ID3D11ShaderResourceView *inShaderResourceView)	{ textureNormView = inShaderResourceView; }
-	ID3D11ShaderResourceView *GetNormalResourceView()	{ return textureNormView; }
 
 	void SetMaterial(const aiColor3D &inAmbient, const aiColor3D &inDiffuse, const aiColor3D &inSpecular, float inShininess)
 	{
@@ -72,6 +66,16 @@ public:
 	void SetRotation(const XMFLOAT4 &inRotation) { mRotation = inRotation; }
 
 	void SetScale(float inScale) { mScale = inScale; }
+
+	void LoadWorldTransform(XMFLOAT4X4* inMatrix)
+	{
+		XMStoreFloat4x4(
+			inMatrix, 
+			XMMatrixScaling(mScale, mScale, mScale) *
+			XMMatrixRotationQuaternion(XMLoadFloat4(&mRotation)) *
+			XMMatrixTranslationFromVector(XMLoadFloat3(&mPosition))
+			);
+	}
 
 	void AddPart(UINT inVertexBufferStart, UINT inIndexBufferStart, int inNumIndices, unsigned int inMaterialIndex)
 	{
@@ -115,14 +119,10 @@ private:
 	//std::vector<std::tuple<UINT, UINT, int, unsigned int> > mParts;
 	std::vector<std::tuple<ID3D11ShaderResourceView*, ID3D11ShaderResourceView*> > mTextures; //diffuse + normal texture
 
-	ShaderManager *mShaderManager;
-
 	MeshData *mMeshData;
 
 	ID3D11Buffer				*perObjectVSCB;
 	ID3D11Buffer				*perObjectPSCB;
 	ID3D11SamplerState			*textureSampler;
-	ID3D11ShaderResourceView	*texture0View;
-	ID3D11ShaderResourceView	*textureNormView;
 	std::string vertexShaderID, pixelShaderID;
 };

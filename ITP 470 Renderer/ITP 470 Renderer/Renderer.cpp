@@ -24,7 +24,8 @@ bool Renderer::Init()
 
 	int sponza = loader->LoadFile("sponza.obj");
 	loader->GetDrawableObject(sponza)->SetScale(2.0f);
-	mSkybox = loader->LoadFile("skybox.obj");
+	mSkybox = loader->LoadFile("skysphere.obj");
+	loader->GetDrawableObject(mSkybox)->SetScale(2.0f);
 	//loader->LoadFile("temp2.obj");
 	DeclareShaderConstants(md3dDevice);
 
@@ -47,7 +48,7 @@ bool Renderer::Init()
 void Renderer::OnResize()
 {
 	D3DApp::OnResize();
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 100.0f);
 	XMStoreFloat4x4(&mProj, P);
 }
 
@@ -63,7 +64,6 @@ void Renderer::UpdateScene(float dt)
 	}
 	loader->GetDrawableObject(mSkybox)->SetPosition(camera->GetPosition());
 	lightManager->Update(dt);
-	int size = sizeof(DirectionalLight);
 	camera->Update(dt);
 }
 
@@ -86,23 +86,21 @@ void Renderer::DrawDepthStencil()
 
 }
 
-void Renderer::DrawScene()
+void Renderer::DrawDepth()
 {
-	assert(md3dImmediateContext);
-	assert(mSwapChain);
-
-	md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
-	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	// Set constants
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
-	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
-	//constantVSMatrix->mProj = XMMatrixOrthographicLH(64, 48, 0.1f, 500.0f);
-	constantVSMatrix->mView = camera->GetViewMatrix();
-	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
-	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
+
+	shaderManager->SetPixelShader("depthPS.cso");
+	shaderManager->SetVertexShader("depthVS.cso");
+	for (DrawableObject* object : loader->GetDrawableObjects())
+	{
+		object->Draw(md3dImmediateContext);
+	}
+}
+
+void Renderer::DrawPhong()
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
@@ -116,13 +114,41 @@ void Renderer::DrawScene()
 
 	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
-	
-	texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
+		shaderManager->SetPixelShader(object->GetPixelShader());
+		shaderManager->SetVertexShader(object->GetVertexShader());
 		object->Draw(md3dImmediateContext);
 	}
+}
+
+void Renderer::DrawScene()
+{
+	assert(md3dImmediateContext);
+	assert(mSwapChain);
+
+	md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
+	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+
+	// Set constants
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
+	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
+	//constantVSMatrix->mProj = XMMatrixOrthographicLH(64, 48, 0.1f, 500.0f);
+	constantVSMatrix->mView = camera->GetViewMatrix();
+	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
+	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
+
+	DrawPhong();
+	//DrawDepth();
+
 	SetBackBufferRenderTarget();
+	shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
+	shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
 	texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 	HR(mSwapChain->Present(0, 0));
 }
@@ -174,3 +200,14 @@ void Renderer::SetBackBufferRenderTarget()
 	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 	return;
 }
+
+void Renderer::InitializeMiscShaders()
+{
+	shaderManager->AddPixelShader("depthPS.cso");
+
+	D3D11_INPUT_ELEMENT_DESC depthInputLayout[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	shaderManager->AddVertexShader("depthVS.cso", depthInputLayout, 1);
+}
+

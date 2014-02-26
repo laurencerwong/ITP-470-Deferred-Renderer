@@ -109,7 +109,7 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 		reinterpret_cast<ID3D11Texture2D*>(texture0)->GetDesc(&textureDesc);
 		texture0->Release();
 
-		inObject.SetDiffuseResourceView(newShaderResourceView);
+		//inObject.SetDiffuseResourceView(newShaderResourceView);
 		inObject.SetSamplerState(newSamplerState);
 	}
 	aiColor3D ambientColor, diffuseColor, specularColor;
@@ -228,7 +228,7 @@ int SceneLoader::LoadFile(const char* filename)
 		OutputDebugStringA(debugMsg.c_str());
 		return false;
 	}
-	DrawableObject *newObject = new DrawableObject(mShaderManager);
+	DrawableObject *newObject = new DrawableObject();
 	std::vector<Vertex> vertexList;
 	std::vector<UINT> indexList;
 	std::stringstream oss;
