@@ -75,7 +75,8 @@ public:
 
 	void AddPart(UINT inVertexBufferStart, UINT inIndexBufferStart, int inNumIndices, unsigned int inMaterialIndex)
 	{
-		mParts.push_back(std::make_tuple(inVertexBufferStart, inIndexBufferStart, inNumIndices, inMaterialIndex));
+		//mParts.push_back(std::make_tuple(inVertexBufferStart, inIndexBufferStart, inNumIndices, inMaterialIndex));
+		mParts.push_back(Part(inVertexBufferStart, inIndexBufferStart, inNumIndices, inMaterialIndex));
 	}
 
 	void AddTexture(ID3D11ShaderResourceView* inDiffuseResourceView, ID3D11ShaderResourceView* inNormalResourceView)
@@ -84,6 +85,22 @@ public:
 	}
 
 private:
+
+	struct Part
+	{
+		Part(UINT inVertexBufferStart, UINT inIndexBufferStart, int inNumIndices, unsigned int inMaterialIndex) :
+		mVertexBufferStart(inVertexBufferStart),
+		mIndexBufferStart(inIndexBufferStart),
+		mNumIndices(inNumIndices),
+		mMaterialIndex(inMaterialIndex)
+		{};
+
+		UINT mVertexBufferStart;
+		UINT mIndexBufferStart;
+		int mNumIndices;
+		unsigned int mMaterialIndex;
+	};
+
 	void BuildShaders(ID3D11Device* d3dDevice);
 	void LoadTexture(ID3D11Device* d3dDevice, const aiScene* scene);
 
@@ -94,8 +111,8 @@ private:
 	float		mRotationAmount;
 	float		mScale;
 
-	//std::vector<std::tuple<ID3D11Buffer*, ID3D11Buffer*, int> > mParts;
-	std::vector<std::tuple<UINT, UINT, int, unsigned int> > mParts;
+	std::vector<Part> mParts;
+	//std::vector<std::tuple<UINT, UINT, int, unsigned int> > mParts;
 	std::vector<std::tuple<ID3D11ShaderResourceView*, ID3D11ShaderResourceView*> > mTextures; //diffuse + normal texture
 
 	ShaderManager *mShaderManager;

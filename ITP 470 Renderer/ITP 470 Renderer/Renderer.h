@@ -36,6 +36,8 @@ public:
 	void SetBackBufferRenderTarget();
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 
+	int mSkybox;
+
 	bool mUpdateObjects;
 	SceneLoader *loader;
 	Camera *camera;

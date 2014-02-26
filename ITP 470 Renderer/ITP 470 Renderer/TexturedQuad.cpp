@@ -98,11 +98,15 @@ void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 
 	ind3dDevice->CreateShaderResourceView(mRenderTargetTexture, &shaderViewDesc, &mShaderResourceView);
 
-	mDraw->SetDiffuseResourceView(GetShaderResourceView());
+	//mDraw->SetDiffuseResourceView(GetShaderResourceView());
+	mDraw->AddTexture(GetShaderResourceView(), nullptr);
+	mDraw->AddPart(0, 0, 6, 0);
 }
 
 void TexturedQuad::SetAsRenderTarget(ID3D11DeviceContext* ind3dDeviceContext, ID3D11DepthStencilView* inDepthStencilView)
 {
+	ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
+	ind3dDeviceContext->PSSetShaderResources(0, 1, nullSRVs); // unbinds the texture so that you don't read and write at the same time
 	ind3dDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, inDepthStencilView);
 	return;
 }

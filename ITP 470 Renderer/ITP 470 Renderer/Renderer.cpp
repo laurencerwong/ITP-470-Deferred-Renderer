@@ -24,7 +24,7 @@ bool Renderer::Init()
 
 	int sponza = loader->LoadFile("sponza.obj");
 	loader->GetDrawableObject(sponza)->SetScale(2.0f);
-	//loader->LoadFile("normalMappedBox.obj");
+	mSkybox = loader->LoadFile("skybox.obj");
 	//loader->LoadFile("temp2.obj");
 	DeclareShaderConstants(md3dDevice);
 
@@ -61,6 +61,7 @@ void Renderer::UpdateScene(float dt)
 			object->Update(dt);
 		}
 	}
+	loader->GetDrawableObject(mSkybox)->SetPosition(camera->GetPosition());
 	lightManager->Update(dt);
 	int size = sizeof(DirectionalLight);
 	camera->Update(dt);
@@ -116,13 +117,13 @@ void Renderer::DrawScene()
 	md3dImmediateContext->Unmap(perFramePSConstantBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSConstantBuffer);
 	
-	//texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+	texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
 		object->Draw(md3dImmediateContext);
 	}
-	//SetBackBufferRenderTarget();
-	//texturedQuad->GetDraw()->Draw(md3dImmediateContext);
+	SetBackBufferRenderTarget();
+	texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 	HR(mSwapChain->Present(0, 0));
 }
 

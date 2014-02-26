@@ -209,7 +209,7 @@ bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject
 	LoadVertices(inMesh, inVertexList);
 	LoadIndices(inMesh, inIndexList);
 
-	inObject.AddPart(inIndexList.size() - inPrevIndexListSize, inPrevIndexListSize, inPrevVertexListSize, inMaterialIndex);
+	inObject.AddPart(inPrevVertexListSize, inPrevIndexListSize, inIndexList.size() - inPrevIndexListSize, inMaterialIndex);
 
 	return true;
 }
