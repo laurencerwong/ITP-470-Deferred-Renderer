@@ -29,7 +29,9 @@ public:
 	bool Init();
 	void OnResize();
 	void UpdateScene(float dt);
+	void BuildShadowTransform();
 	void DrawScene();
+	void DrawSceneToShadowMap(ShadowMap* inShadowMap);
 	void DrawPhong();
 	void DrawDepth();
 	void DrawDepthStencil();
@@ -38,6 +40,7 @@ public:
 	void SetBackBufferRenderTarget();
 	void SetPerObjectVSCB();
 	void SetPerObjectPSCB();
+	void UpdatePerFrameVSCB();
 	void InitializeMiscShaders();
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 
@@ -50,6 +53,11 @@ public:
 	ShaderManager *shaderManager;
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
+
+	XMFLOAT4X4 mLightView;
+	XMFLOAT4X4 mLightProj;
+	XMFLOAT4X4 mShadowTransform;
+
 	ID3D11InputLayout *mInputLayout;
 	ID3D11VertexShader* colorVS;
 	ID3D11PixelShader* colorPS;

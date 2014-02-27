@@ -35,15 +35,20 @@ public:
 
 	~DrawableObject();
 	void Draw(ID3D11DeviceContext* d3dDeviceContext);
+	void DrawWithoutTextures(ID3D11DeviceContext* d3dDeviceContext);
 	void Update(float deltaTime);
 
 	MeshData* GetMeshData()								{ return mMeshData; }
 
 	void SetVSConstantBuffer(ID3D11Buffer *inBuffer)		{ perObjectVSCB = inBuffer; }
 	ID3D11Buffer* GetVSConstantBuffer()					{ return perObjectVSCB; }
+	void UpdateVSConstantBuffer(ID3D11DeviceContext *ind3dDeviceContext);
 
 	void SetPSConstantBuffer(ID3D11Buffer *inBuffer)		{ perObjectPSCB = inBuffer; }
 	ID3D11Buffer* GetPSConstantBuffer()					{ return perObjectPSCB; }
+	void UpdatePSConstantBuffer(ID3D11DeviceContext *ind3dDeviceContext);
+
+	void UpdateSamplerState(ID3D11DeviceContext *ind3dDeviceContext);
 
 	void SetPixelShader(const std::string &inPixelShader) { pixelShaderID = inPixelShader; }
 	void SetVertexShader(const std::string &inVertexShader) { vertexShaderID = inVertexShader; }
@@ -86,6 +91,14 @@ public:
 	void AddTexture(ID3D11ShaderResourceView* inDiffuseResourceView, ID3D11ShaderResourceView* inNormalResourceView)
 	{
 		mTextures.push_back(std::make_tuple(inDiffuseResourceView, inNormalResourceView));
+	}
+
+	void SetTexture(int index, ID3D11ShaderResourceView* inDiffuseResourceView, ID3D11ShaderResourceView* inNormalResourceView)
+	{
+		if (index < mTextures.size())
+		{
+			mTextures[index] = std::make_tuple(inDiffuseResourceView, inNormalResourceView);
+		}
 	}
 
 private:

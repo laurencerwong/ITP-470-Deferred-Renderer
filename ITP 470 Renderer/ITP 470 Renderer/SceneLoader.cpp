@@ -3,11 +3,9 @@
 #include "assimp/include/Importer.hpp"
 #include "assimp/include/postprocess.h"
 #include "DDSTextureLoader/DDSTextureLoader.h"
-#include "assimp/include/mesh.h"
 #include <sstream>
 #include "FileReaderWriter.h"
 #include "DrawableObject.h"
-#include "Vertex.h"
 
 SceneLoader::SceneLoader()
 {
@@ -162,11 +160,18 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject, ShaderManag
 	inObject.SetPSConstantBuffer(newPSConstantBuffer);
 }
 
-void LoadVertices(const aiMesh &inMesh, std::vector<Vertex> &convertedVertices)
+void LoadVertices(const aiMesh &inMesh, std::vector<Vertex> &convertedVertices, BoundingSphere &inBoundingSphere)
 {
 	for (unsigned int i = 0; i < inMesh.mNumVertices; ++i)
 	{
 		Vertex newVertex;
+
+		float vertexLength = inMesh.mVertices[i].Length();
+		if (vertexLength > inBoundingSphere.mRadius)
+		{
+			inBoundingSphere.mRadius = vertexLength;
+		}
+
 		newVertex.LoadAiVector3D(newVertex.Pos, inMesh.mVertices[i]);
 		if (inMesh.HasNormals())
 		{
@@ -200,13 +205,13 @@ void LoadIndices(const aiMesh &inMesh, std::vector<UINT> &convertedIndices)
 }
 
 
-bool ProcessMesh(ID3D11Device *ind3dDevice, const aiMesh &inMesh, DrawableObject &inObject, std::vector<Vertex> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex)
+bool SceneLoader::ProcessMesh(ID3D11Device *ind3dDevice, aiMesh &inMesh , DrawableObject &inObject, std::vector<Vertex> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex)
 {
 
 	int inPrevIndexListSize = inIndexList.size();
 	int inPrevVertexListSize = inVertexList.size();
 
-	LoadVertices(inMesh, inVertexList);
+	LoadVertices(inMesh, inVertexList, mSceneBoundingSphere);
 	LoadIndices(inMesh, inIndexList);
 
 	inObject.AddPart(inPrevVertexListSize, inPrevIndexListSize, inIndexList.size() - inPrevIndexListSize, inMaterialIndex);

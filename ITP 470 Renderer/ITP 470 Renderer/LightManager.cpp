@@ -15,7 +15,7 @@ void LightManager::CreateDirectionalLight(const XMFLOAT4 &inColor, const XMFLOAT
 	
 	DirectionalLight newDirectionalLight;
 	newDirectionalLight.mColor = inColor;
-	newDirectionalLight.mDirection = inPosition;
+	XMStoreFloat3(&newDirectionalLight.mDirection, XMVector3Normalize(XMLoadFloat3(&inPosition)));
 	XMStoreFloat4(&newDirectionalLight.mSpecularColor,  XMLoadFloat4(&inColor) + XMLoadFloat4(&XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
 	mDirectionalLights.push_back(newDirectionalLight);
 	

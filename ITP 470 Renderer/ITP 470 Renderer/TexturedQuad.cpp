@@ -98,7 +98,17 @@ void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 
 	ind3dDevice->CreateShaderResourceView(mRenderTargetTexture, &shaderViewDesc, &mShaderResourceView);
 
-	//mDraw->SetDiffuseResourceView(GetShaderResourceView());
+	ID3D11Buffer *perObjectConstantBuffer;
+	D3D11_BUFFER_DESC perObjectConstantBufferDesc;
+	perObjectConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	perObjectConstantBufferDesc.ByteWidth = sizeof(perObjectCBVSStruct);
+	perObjectConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perObjectConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perObjectConstantBufferDesc.MiscFlags = 0;
+	perObjectConstantBufferDesc.StructureByteStride = 0;
+	ind3dDevice->CreateBuffer(&perObjectConstantBufferDesc, NULL, &perObjectConstantBuffer);
+	mDraw->SetVSConstantBuffer(perObjectConstantBuffer);
+
 	mDraw->AddTexture(GetShaderResourceView(), nullptr);
 	mDraw->AddPart(0, 0, 6, 0);
 }
@@ -108,6 +118,7 @@ void TexturedQuad::SetAsRenderTarget(ID3D11DeviceContext* ind3dDeviceContext, ID
 	ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 	ind3dDeviceContext->PSSetShaderResources(0, 1, nullSRVs); // unbinds the texture so that you don't read and write at the same time
 	ind3dDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, inDepthStencilView);
+
 	return;
 }
 

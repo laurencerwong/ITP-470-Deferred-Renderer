@@ -1,3 +1,15 @@
+cbuffer cbPerFrame : register(cb0)
+{
+	float4x4 gProj;
+	float4x4 gView;
+
+};
+
+cbuffer cbPerObject : register(cb1)
+{
+	float4x4 gWorld;
+};
+
 struct VertexIn
 {
 	float3 pos : POSITION;

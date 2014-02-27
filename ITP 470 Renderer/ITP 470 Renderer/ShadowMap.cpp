@@ -1,5 +1,5 @@
 #include "ShadowMap.h"
-
+#include <assert.h>
 
 ShadowMap::ShadowMap(ID3D11Device* ind3dDevice, unsigned int inWidth, unsigned int inHeight)
 : mWidth(inWidth), mHeight(inHeight), mDepthMapResourceView(0), mDepthMapStencilView(0)
@@ -26,21 +26,33 @@ ShadowMap::ShadowMap(ID3D11Device* ind3dDevice, unsigned int inWidth, unsigned i
 	texDesc.MiscFlags = 0;
 
 	ID3D11Texture2D *depthMap = 0;
-	ind3dDevice->CreateTexture2D(&texDesc, 0, &depthMap);
+	HRESULT hr = ind3dDevice->CreateTexture2D(&texDesc, 0, &depthMap);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	depthStencilViewDesc.Flags = 0;
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
-	ind3dDevice->CreateDepthStencilView(depthMap, &depthStencilViewDesc, &mDepthMapStencilView);
+	hr = ind3dDevice->CreateDepthStencilView(depthMap, &depthStencilViewDesc, &mDepthMapStencilView);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
 	shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Texture2D.MipLevels = texDesc.MipLevels;
 	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-	ind3dDevice->CreateShaderResourceView(depthMap, &shaderResourceViewDesc, &mDepthMapResourceView);
+	hr = ind3dDevice->CreateShaderResourceView(depthMap, &shaderResourceViewDesc, &mDepthMapResourceView);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
 
 	depthMap->Release();
 }
@@ -56,6 +68,8 @@ void ShadowMap::BindDepthStencilViewAndSetNullRenderTarget(ID3D11DeviceContext *
 
 	ID3D11RenderTargetView* renderTargets[1] = { 0 };
 	ind3dDeviceContext->OMSetRenderTargets(1, renderTargets, mDepthMapStencilView);
+	
+	ind3dDeviceContext->PSSetShader(nullptr, 0, 0);
 
 	ind3dDeviceContext->ClearDepthStencilView(mDepthMapStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }

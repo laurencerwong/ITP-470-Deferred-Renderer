@@ -1,7 +1,7 @@
 #include "ShaderManager.h"
 #include "FileReaderWriter.h"
 #include <algorithm>
-
+#include <assert.h>
 
 ShaderManager::ShaderManager()
 {
@@ -70,7 +70,12 @@ void ShaderManager::SetVertexShader(const std::string &inShaderName)
 	{
 		return;
 	}
-
+#if DEBUG
+	if (mVSWithLayouts.find(inShaderName) == mVSWithLayouts.end())
+	{
+		assert(false);
+	}
+#endif
 	md3dDeviceContext->VSSetShader(mVSWithLayouts[inShaderName].mVertexShader, 0, 0);
 	md3dDeviceContext->IASetInputLayout(mVSWithLayouts[inShaderName].mInputLayout);
 }
@@ -81,6 +86,11 @@ void ShaderManager::SetPixelShader(const std::string &inShaderName)
 	{
 		return;
 	}
-
+#if DEBUG
+	if (mPSWithLayouts.find(inShaderName) == mPSWithLayouts.end())
+	{
+		assert(false);
+	}
+#endif
 	md3dDeviceContext->PSSetShader(mPixelShaders[inShaderName], 0, 0);
 }

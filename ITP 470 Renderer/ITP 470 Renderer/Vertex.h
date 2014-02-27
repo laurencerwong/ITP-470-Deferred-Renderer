@@ -4,7 +4,7 @@
 using DirectX::XMFLOAT3;
 using DirectX::XMFLOAT2;
 
-struct Vertex
+typedef struct Vertex
 {
 	XMFLOAT3 Pos;
 	XMFLOAT3 Normal;
@@ -20,9 +20,9 @@ struct Vertex
 	{
 		inLHSVector = XMFLOAT2(inRHSVector.x, inRHSVector.y);
 	}
-};
+} Vertex;
 
-struct VertexPosTex
+typedef struct VertexPosTex
 {
 	XMFLOAT3 Pos;
 	XMFLOAT2 Tex0;
@@ -35,4 +35,4 @@ struct VertexPosTex
 	{
 		inLHSVector = XMFLOAT2(inRHSVector.x, inRHSVector.y);
 	}
-};
+} VertexPosTex;
