@@ -1,6 +1,14 @@
 #include "ShadowMap.h"
 #include <assert.h>
 
+/*
+Typeless Formats = Not bound to a particular point in the pipeline.  So, R24_G8_TYPELESS means 
+2 component type with 24bits of precision for first component and only 8 bits for the second
+
+Depth Stencil View = for accessing a texture resource during the depth/stencil testing
+Shader resource view = for accessing a resource during shader
+*/
+
 ShadowMap::ShadowMap(ID3D11Device* ind3dDevice, unsigned int inWidth, unsigned int inHeight)
 : mWidth(inWidth), mHeight(inHeight), mDepthMapResourceView(0), mDepthMapStencilView(0)
 {

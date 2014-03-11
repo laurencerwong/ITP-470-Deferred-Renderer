@@ -2,7 +2,7 @@
 #include "DrawableObject.h"
 
 Renderer::Renderer(HINSTANCE hInstance)
-: D3DApp(hInstance)
+: D3DApp(hInstance), mCurrentViewMode(VIEW_MODE_FULL)
 {
 	lightManager = new LightManager();
 	XMMATRIX I = XMMatrixIdentity();
@@ -80,16 +80,6 @@ void Renderer::OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &mouse)
 	}
 }
 
-void Renderer::DrawDepthStencil()
-{
-	assert(md3dImmediateContext);
-	assert(mSwapChain); 
-
-	md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
-	
-
-}
-
 void Renderer::DrawDepth()
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -138,8 +128,8 @@ void Renderer::UpdatePerFrameVSCB()
 	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
 	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
 	//constantVSMatrix->mProj = XMMatrixOrthographicLH(64, 48, 0.1f, 500.0f);
-	constantVSMatrix->mView = camera->GetViewMatrix();
-	//constantVSMatrix->mView = XMLoadFloat4x4(&mView);
+	//constantVSMatrix->mView = camera->GetViewMatrix();
+	constantVSMatrix->mView = XMLoadFloat4x4(&mView);
 	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
 }
@@ -147,8 +137,13 @@ void Renderer::UpdatePerFrameVSCB()
 void Renderer::DrawSceneToShadowMap(ShadowMap *inShadowMap)
 {
 	inShadowMap->BindDepthStencilViewAndSetNullRenderTarget(md3dImmediateContext);
-
+	BuildShadowTransform();
 	DrawDepth();
+
+	md3dImmediateContext->RSSetState(0);
+	md3dImmediateContext->RSSetViewports(1, &mScreenViewport);
+	XMStoreFloat4x4(&mView, camera->GetViewMatrix());
+	XMStoreFloat4x4(&mProj, XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 0.1f, 1000.0f));
 }
 
 void Renderer::BuildShadowTransform()
@@ -161,6 +156,20 @@ void Renderer::BuildShadowTransform()
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	XMStoreFloat4x4(&mView, XMMatrixLookAtLH(lightPos, targetPos, up));
+
+	XMFLOAT3 sphereCenterLS;
+	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, XMLoadFloat4x4(&mView)));
+
+	float l = sphereCenterLS.x - sceneBoundingSphere.mRadius;
+	float b = sphereCenterLS.y - sceneBoundingSphere.mRadius;
+	float n = sphereCenterLS.z - sceneBoundingSphere.mRadius;
+	float r = sphereCenterLS.x + sceneBoundingSphere.mRadius;
+	float t = sphereCenterLS.y + sceneBoundingSphere.mRadius;
+	float f = sphereCenterLS.z + sceneBoundingSphere.mRadius;
+
+
+
+	XMStoreFloat4x4(&mProj, XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f));
 }
 
 void Renderer::DrawScene()
@@ -175,28 +184,23 @@ void Renderer::DrawScene()
 
 	DrawSceneToShadowMap(shadowMap);
 
-	
-	// Set constants
-	/*texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+	//HHHHHAAAACKTACULAR
+	UpdatePerFrameVSCB();
 
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
-	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
-	//constantVSMatrix->mProj = XMMatrixOrthographicLH(64, 48, 0.1f, 500.0f);
-	constantVSMatrix->mView = camera->GetViewMatrix();
-	//constantVSMatrix->mView = XMLoadFloat4x4(&mView);
-	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
-	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
-
-	DrawPhong();*/
-	//DrawDepth();
+	switch (mCurrentViewMode)
+	{
+	case VIEW_MODE_FULL:
+		texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+		//texturedQuad->GetDraw()->SetPixelShader("quadPS.cso");
+		DrawPhong();
+		break;
+	case VIEW_MODE_DEPTH:
+		//texturedQuad->GetDraw()->SetPixelShader("quadDepthPS.cso");
+		texturedQuad->GetDraw()->SetTexture(0, shadowMap->GetDepthMapResourceView(), nullptr);
+		break;
+	}
 	SetBackBufferRenderTarget();
-
-
-	md3dImmediateContext->RSSetState(0);
-	md3dImmediateContext->RSSetViewports(1, &mScreenViewport);
-	texturedQuad->GetDraw()->SetTexture(0, shadowMap->GetDepthMapResourceView(), nullptr);
+	
 	shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
 	shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
 	texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
@@ -231,26 +235,6 @@ void Renderer::DeclareShaderConstants(ID3D11Device* d3dDevice)
 	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSConstantBuffer);
 }
 
-void Renderer::CreateDepthStencilState(ID3D11Device* d3dDevice)
-{
-	D3D11_DEPTH_STENCIL_DESC noDoubleBlendDesc;
-	noDoubleBlendDesc.DepthEnable		= true;
-	noDoubleBlendDesc.DepthWriteMask	= D3D11_DEPTH_WRITE_MASK_ALL;
-	noDoubleBlendDesc.DepthFunc			= D3D11_COMPARISON_LESS;
-	noDoubleBlendDesc.StencilEnable		= true;
-	noDoubleBlendDesc.StencilReadMask	= 0xff;
-	noDoubleBlendDesc.StencilWriteMask	= 0xff;
-
-	noDoubleBlendDesc.FrontFace.StencilFailOp		= D3D11_STENCIL_OP_KEEP;
-	noDoubleBlendDesc.FrontFace.StencilDepthFailOp	= D3D11_STENCIL_OP_KEEP;
-	noDoubleBlendDesc.FrontFace.StencilPassOp		= D3D11_STENCIL_OP_INCR;
-	noDoubleBlendDesc.FrontFace.StencilFunc			= D3D11_COMPARISON_EQUAL;
-
-	//don't need to worry about noDoubleBlendDesc.BackFace
-
-	d3dDevice->CreateDepthStencilState(&noDoubleBlendDesc, &mNoDoubleBlendDSS);
-}
-
 void Renderer::SetBackBufferRenderTarget()
 {
 	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
@@ -267,3 +251,21 @@ void Renderer::InitializeMiscShaders()
 	shaderManager->AddVertexShader("depthVS.cso", depthInputLayout, 1);
 }
 
+void Renderer::OnKeyUp(WPARAM inKeyCode)
+{
+	switch (inKeyCode)
+	{
+	case L'u':
+	case L'U':
+		mUpdateObjects = !mUpdateObjects;
+		break;
+	case L'v':
+	case L'V':
+		mCurrentViewMode = static_cast<ViewMode>((mCurrentViewMode + 1) % 2);
+	}
+}
+
+void Renderer::OnKeyDown(WPARAM inKeyCode)
+{
+	
+}

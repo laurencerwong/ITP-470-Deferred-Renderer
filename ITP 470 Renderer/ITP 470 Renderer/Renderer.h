@@ -20,6 +20,12 @@ struct perFrameCBPSStruct
 	XMVECTOR gCamPos;
 };
 
+typedef enum ViewMode
+{
+	VIEW_MODE_DEPTH,
+	VIEW_MODE_FULL
+} ViewMode;
+
 class Renderer : public D3DApp
 {
 public:
@@ -43,10 +49,14 @@ public:
 	void UpdatePerFrameVSCB();
 	void InitializeMiscShaders();
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
+	virtual void OnKeyUp(WPARAM keyCode) override;
+	virtual void OnKeyDown(WPARAM keyCode) override;
 
 	int mSkybox;
 
 	bool mUpdateObjects;
+	ViewMode mCurrentViewMode;
+
 	SceneLoader *loader;
 	Camera *camera;
 	LightManager *lightManager;

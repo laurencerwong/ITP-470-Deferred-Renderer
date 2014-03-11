@@ -35,6 +35,8 @@ public:
 	virtual void UpdateScene(float dt)=0;
 	virtual void DrawScene()=0; 
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual void OnKeyUp(WPARAM keyCode) = 0;
+	virtual void OnKeyDown(WPARAM keyCode) = 0;
 
 	// Convenience overrides for handling mouse input.
 	virtual void OnMouseDown(WPARAM btnState, int x, int y){ }
@@ -47,6 +49,7 @@ protected:
 	bool InitDirect3D();
 
 	void CalculateFrameStats();
+	void ProcessMouseInput(LPARAM inMouseInput);
 
 protected:
 

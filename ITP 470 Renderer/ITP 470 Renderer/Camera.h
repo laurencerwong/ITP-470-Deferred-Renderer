@@ -25,6 +25,7 @@ public:
 	void	SetView(const XMFLOAT4X4& inView)			{ mView = inView; }
 	void	SetMouseCoords(float x, float y)			{ mMouseCoordinates = XMFLOAT2(x, y); }
 	void	UpdateMouseWheel(USHORT inMouseWheelDelta);
+	void	UpdateKeyDown(WPARAM inKey);
 
 private:
 

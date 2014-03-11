@@ -322,19 +322,31 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		return 0;
 	case WM_INPUT:
-		RAWINPUT raw;
-
-		UINT sizeRaw = sizeof(raw);
-
-		GetRawInputData((HRAWINPUT)lParam, RID_INPUT, &raw, &sizeRaw, sizeof(RAWINPUTHEADER));
-
-		if (raw.header.dwType == RIM_TYPEMOUSE)
-		{
-			OnMouseMoveRaw(wParam, raw.data.mouse);
-			break;
-		}
+		ProcessMouseInput(lParam);
+		return 0;
+	case WM_KEYUP:
+		OnKeyUp(wParam);
+		return 0;
+	case WM_KEYDOWN:
+		OnKeyDown(wParam);
+		return 0;
 	}
+
 	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+void D3DApp::ProcessMouseInput(LPARAM inMouseInput)
+{
+	RAWINPUT raw;
+
+	UINT sizeRaw = sizeof(raw);
+
+	GetRawInputData((HRAWINPUT)inMouseInput, RID_INPUT, &raw, &sizeRaw, sizeof(RAWINPUTHEADER));
+
+	if (raw.header.dwType == RIM_TYPEMOUSE)
+	{
+		OnMouseMoveRaw(inMouseInput, raw.data.mouse);
+	}
 }
 
 
@@ -508,6 +520,7 @@ void D3DApp::CalculateFrameStats()
 		outs << mMainWndCaption << L"    "
 			<< L"FPS: " << fps << L"    "
 			<< L"Frame Time: " << mspf << L" (ms)";
+
 		SetWindowText(mhMainWnd, outs.str().c_str());
 
 		// Reset for next average.

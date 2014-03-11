@@ -66,6 +66,9 @@
     <ClCompile Include="MeshData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -125,6 +128,9 @@
     <ClInclude Include="BoundingSphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Effects\colorVS.hlsl">
@@ -149,6 +155,9 @@
       <Filter>Effect Files</Filter>
     </FxCompile>
     <FxCompile Include="depthPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="quadDepthPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
   </ItemGroup>

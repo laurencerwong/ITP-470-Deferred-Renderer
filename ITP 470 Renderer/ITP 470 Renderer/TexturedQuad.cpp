@@ -52,6 +52,7 @@ void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 	};
 
 	mDraw->SetVertexShader(mShaderManager->AddVertexShader("quadVS.cso", inputLayout, 2));
+	mShaderManager->AddPixelShader("quadDepthPS.cso");
 	mDraw->SetPixelShader(mShaderManager->AddPixelShader("quadPS.cso"));
 
 	D3D11_SAMPLER_DESC textureSamplerDesc;
@@ -115,6 +116,7 @@ void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 
 void TexturedQuad::SetAsRenderTarget(ID3D11DeviceContext* ind3dDeviceContext, ID3D11DepthStencilView* inDepthStencilView)
 {
+	mDraw->SetTexture(0, GetShaderResourceView(), nullptr);
 	ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 	ind3dDeviceContext->PSSetShaderResources(0, 1, nullSRVs); // unbinds the texture so that you don't read and write at the same time
 	ind3dDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, inDepthStencilView);
