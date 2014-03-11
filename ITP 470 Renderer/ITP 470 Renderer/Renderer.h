@@ -47,6 +47,7 @@ public:
 	void SetPerObjectVSCB();
 	void SetPerObjectPSCB();
 	void UpdatePerFrameVSCB();
+	void UpdatePerFrameVSCBShadowMap();
 	void InitializeMiscShaders();
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 	virtual void OnKeyUp(WPARAM keyCode) override;

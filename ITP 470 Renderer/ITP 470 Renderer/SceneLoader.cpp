@@ -132,8 +132,8 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject, ShaderManag
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	inObject.SetVertexShader(inShaderManager->AddVertexShader("phongVS.cso", vertex1Desc, 5));
-	inObject.SetPixelShader(inShaderManager->AddPixelShader("phongPS.cso"));
+	inObject.SetVertexShader(inShaderManager->AddVertexShader("phongVSShadowMap.cso", vertex1Desc, 5));
+	inObject.SetPixelShader(inShaderManager->AddPixelShader("phongPSShadowMap.cso"));
 
 	//declare VS constant buffer description
 	D3D11_BUFFER_DESC perObjectConstantBufferDesc;

@@ -30,7 +30,9 @@ void DrawableObject::UpdateVSConstantBuffer(ID3D11DeviceContext* d3dDeviceContex
 
 	d3dDeviceContext->Map(perObjectVSCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perObjectCBVSStruct *vertexShaderCB = (perObjectCBVSStruct*)mappedResource.pData;
-	XMStoreFloat4x4(&vertexShaderCB->mWorld, XMMatrixScaling(mScale, mScale, mScale) * XMMatrixRotationQuaternion(XMLoadFloat4(&mRotation)) * XMMatrixTranslationFromVector(XMLoadFloat3(&mPosition)));
+	XMMATRIX world = XMMatrixScaling(mScale, mScale, mScale) * XMMatrixRotationQuaternion(XMLoadFloat4(&mRotation)) * XMMatrixTranslationFromVector(XMLoadFloat3(&mPosition));
+	vertexShaderCB->mWorld = world;
+	vertexShaderCB->mShadowTransform = world * XMLoadFloat4x4(&mShadowTransform);
 	d3dDeviceContext->Unmap(perObjectVSCB, 0);
 	d3dDeviceContext->VSSetConstantBuffers(1, 1, &perObjectVSCB);
 }

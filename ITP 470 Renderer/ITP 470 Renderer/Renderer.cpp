@@ -114,6 +114,9 @@ void Renderer::DrawPhong()
 	{
 		shaderManager->SetPixelShader(object->GetPixelShader());
 		shaderManager->SetVertexShader(object->GetVertexShader());
+		ID3D11ShaderResourceView* psShaderResourceViews = { shadowMap->GetDepthMapResourceView() };
+		md3dImmediateContext->PSSetShaderResources(2, 1, &psShaderResourceViews);
+		object->SetShadowTransform(XMLoadFloat4x4(&mShadowTransform));
 		object->UpdateVSConstantBuffer(md3dImmediateContext);
 		object->UpdatePSConstantBuffer(md3dImmediateContext);
 		object->UpdateSamplerState(md3dImmediateContext);
@@ -134,10 +137,22 @@ void Renderer::UpdatePerFrameVSCB()
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
 }
 
+void Renderer::UpdatePerFrameVSCBShadowMap()
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
+	constantVSMatrix->mProj = XMLoadFloat4x4(&mLightProj);
+	constantVSMatrix->mView = XMLoadFloat4x4(&mLightView);
+	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
+	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
+}
+
 void Renderer::DrawSceneToShadowMap(ShadowMap *inShadowMap)
 {
 	inShadowMap->BindDepthStencilViewAndSetNullRenderTarget(md3dImmediateContext);
 	BuildShadowTransform();
+	UpdatePerFrameVSCBShadowMap();
 	DrawDepth();
 
 	md3dImmediateContext->RSSetState(0);
@@ -155,10 +170,12 @@ void Renderer::BuildShadowTransform()
 	XMVECTOR targetPos = XMLoadFloat3(&sceneBoundingSphere.mCenter);
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	XMStoreFloat4x4(&mView, XMMatrixLookAtLH(lightPos, targetPos, up));
+	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, up);
+
+	XMStoreFloat4x4(&mLightView, lightView);
 
 	XMFLOAT3 sphereCenterLS;
-	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, XMLoadFloat4x4(&mView)));
+	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, XMLoadFloat4x4(&mLightView)));
 
 	float l = sphereCenterLS.x - sceneBoundingSphere.mRadius;
 	float b = sphereCenterLS.y - sceneBoundingSphere.mRadius;
@@ -167,9 +184,18 @@ void Renderer::BuildShadowTransform()
 	float t = sphereCenterLS.y + sceneBoundingSphere.mRadius;
 	float f = sphereCenterLS.z + sceneBoundingSphere.mRadius;
 
+	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
 
+	XMStoreFloat4x4(&mLightProj, lightProj);
 
-	XMStoreFloat4x4(&mProj, XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f));
+	XMMATRIX transNDCtoTex(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.0f, 1.0f);
+
+	XMStoreFloat4x4(&mShadowTransform, lightView * lightProj * transNDCtoTex);
+	
 }
 
 void Renderer::DrawScene()
@@ -179,8 +205,6 @@ void Renderer::DrawScene()
 
 	md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
 	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	UpdatePerFrameVSCB();
 
 	DrawSceneToShadowMap(shadowMap);
 
@@ -209,7 +233,7 @@ void Renderer::DrawScene()
 	texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 
 	ID3D11ShaderResourceView* unBindAllResources[16] = { 0 };
-	md3dImmediateContext->PSSetShaderResources(0, 1, unBindAllResources);
+	md3dImmediateContext->PSSetShaderResources(0, 16, unBindAllResources);
 	HR(mSwapChain->Present(0, 0));
 }
 

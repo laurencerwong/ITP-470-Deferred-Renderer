@@ -21,7 +21,8 @@ struct Material
 
 struct perObjectCBVSStruct
 {
-	XMFLOAT4X4 mWorld;
+	XMMATRIX mWorld;
+	XMMATRIX mShadowTransform;
 };
 struct perObjectCBPSStruct
 {
@@ -101,6 +102,11 @@ public:
 		}
 	}
 
+	void SetShadowTransform(XMMATRIX &inShadowTransform)
+	{
+		XMStoreFloat4x4(&mShadowTransform, inShadowTransform);
+	}
+
 private:
 
 	struct Part
@@ -127,6 +133,7 @@ private:
 	XMFLOAT3	mPosition;
 	float		mRotationAmount;
 	float		mScale;
+	XMFLOAT4X4	mShadowTransform;
 
 	std::vector<Part> mParts;
 	//std::vector<std::tuple<UINT, UINT, int, unsigned int> > mParts;

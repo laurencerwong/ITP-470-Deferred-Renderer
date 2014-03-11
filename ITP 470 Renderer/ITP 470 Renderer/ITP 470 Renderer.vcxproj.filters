@@ -160,5 +160,11 @@
     <FxCompile Include="quadDepthPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
+    <FxCompile Include="phongPSShadowMap.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="phongVSShadowMap.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

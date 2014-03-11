@@ -1,10 +1,12 @@
-﻿Build started 3/10/2014 4:59:49 PM.
+﻿Build started 3/10/2014 6:05:00 PM.
      1>Project "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\ITP 470 Renderer\ITP 470 Renderer.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Renderer.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Renderer.cpp ShadowMap.cpp
+         ShadowMap.cpp
          Renderer.cpp
-     1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\drawableobject.h(98): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\drawableobject.h(99): warning C4018: '<' : signed/unsigned mismatch
      1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\renderer.cpp(85): warning C4101: 'mappedResource' : unreferenced local variable
+         Generating Code...
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.exe" /INCREMENTAL /NOLOGO assimp.lib d3d11.lib D3DCompiler.lib Effects11d.lib dxgi.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.lib" /MACHINE:X86 Debug\Camera.obj
          Debug\DDSTextureLoader.obj
@@ -32,4 +34,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.63
+Time Elapsed 00:00:01.93
