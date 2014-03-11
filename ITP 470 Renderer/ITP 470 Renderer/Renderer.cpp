@@ -25,8 +25,8 @@ bool Renderer::Init()
 	int sponza = loader->LoadFile("sponza.obj");
 	loader->GetDrawableObject(sponza)->SetScale(1.0f);
 	//loader->GetDrawableObject(sponza)->SetPosition(XMFLOAT3(0.0f, 0.0f, 30.0f));
-	mSkybox = loader->LoadFile("skysphere.obj");
-	loader->GetDrawableObject(mSkybox)->SetScale(2.0f);
+	//mSkybox = loader->LoadFile("skysphere.obj");
+	//loader->GetDrawableObject(mSkybox)->SetScale(2.0f);
 	//loader->LoadFile("temp2.obj");
 	DeclareShaderConstants(md3dDevice);
 
@@ -44,6 +44,22 @@ bool Renderer::Init()
 	texturedQuad->Initialize(md3dDevice);
 
 	InitializeMiscShaders();
+
+	//set the depth biasing to prevent shadow acne
+	D3D11_RASTERIZER_DESC newRasterizerDesc;
+	newRasterizerDesc.DepthBias = 10;
+	newRasterizerDesc.DepthBiasClamp = 0.0f;
+	newRasterizerDesc.SlopeScaledDepthBias = 1.0f;
+	newRasterizerDesc.CullMode = D3D11_CULL_BACK;
+	newRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	newRasterizerDesc.FrontCounterClockwise = false;
+	newRasterizerDesc.DepthClipEnable = false;
+	newRasterizerDesc.ScissorEnable = false;
+	newRasterizerDesc.MultisampleEnable = false;
+	newRasterizerDesc.AntialiasedLineEnable = false;
+
+	md3dDevice->CreateRasterizerState(&newRasterizerDesc, &mNoShadowAcneState);
+	
 
 	return true;
 }
@@ -65,8 +81,11 @@ void Renderer::UpdateScene(float dt)
 			object->Update(dt);
 		}
 	}
-	loader->GetDrawableObject(mSkybox)->SetPosition(camera->GetPosition());
-	lightManager->Update(dt);
+	//loader->GetDrawableObject(mSkybox)->SetPosition(camera->GetPosition());
+	if (mUpdateLights)
+	{
+		lightManager->Update(dt);
+	}
 	camera->Update(dt);
 	BuildShadowTransform();
 }
@@ -96,7 +115,7 @@ void Renderer::DrawDepth()
 void Renderer::DrawPhong()
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-
+	md3dImmediateContext->RSSetState(mNoShadowAcneState);
 	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
 	constantPSStruct->gDirLight = lightManager->GetDirectionalLights()[0];
@@ -160,6 +179,7 @@ void Renderer::DrawSceneToShadowMap(ShadowMap *inShadowMap)
 	XMStoreFloat4x4(&mView, camera->GetViewMatrix());
 	XMStoreFloat4x4(&mProj, XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 0.1f, 1000.0f));
 }
+
 
 void Renderer::BuildShadowTransform()
 {
@@ -286,6 +306,11 @@ void Renderer::OnKeyUp(WPARAM inKeyCode)
 	case L'v':
 	case L'V':
 		mCurrentViewMode = static_cast<ViewMode>((mCurrentViewMode + 1) % 2);
+		break;
+	case L'l':
+	case L'L':
+		lightManager->UpdateDirectionalLight(XMLoadFloat3(&camera->GetTarget()) - XMLoadFloat3(&camera->GetPosition()));
+		break;
 	}
 }
 

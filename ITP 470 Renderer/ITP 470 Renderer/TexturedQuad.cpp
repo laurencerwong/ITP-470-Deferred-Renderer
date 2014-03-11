@@ -67,7 +67,7 @@ void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 
 	ID3D11SamplerState *newSamplerState;
 	ind3dDevice->CreateSamplerState(&textureSamplerDesc, &newSamplerState);
-	mDraw->SetSamplerState(newSamplerState);
+	mDraw->SetTextureSamplerState(newSamplerState);
 
 	D3D11_TEXTURE2D_DESC textureDesc;
 

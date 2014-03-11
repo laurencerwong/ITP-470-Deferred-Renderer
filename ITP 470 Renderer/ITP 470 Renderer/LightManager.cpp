@@ -21,6 +21,11 @@ void LightManager::CreateDirectionalLight(const XMFLOAT4 &inColor, const XMFLOAT
 	
 }
 
+void LightManager::UpdateDirectionalLight(const XMVECTOR &inPosition)
+{
+	XMStoreFloat3(&mDirectionalLights[0].mDirection, XMVector3Normalize(inPosition));
+}
+
 void LightManager::CreatePointLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius)
 {
 	PointLight newPointLight;

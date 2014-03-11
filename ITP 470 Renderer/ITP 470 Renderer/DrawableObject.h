@@ -56,8 +56,10 @@ public:
 	std::string GetPixelShader() { return pixelShaderID; }
 	std::string GetVertexShader() { return vertexShaderID; }
 
-	void SetSamplerState(ID3D11SamplerState *inSamplerState)	{ textureSampler = inSamplerState; }
+	void SetTextureSamplerState(ID3D11SamplerState *inSamplerState)	{ textureSampler = inSamplerState; }
 	ID3D11SamplerState *GetSamplerState()				{ return textureSampler; }
+
+	void SetShadowSamplerState(ID3D11SamplerState *inSamplerState) { mShadowMapSampler = inSamplerState; }
 
 	void SetMaterial(const aiColor3D &inAmbient, const aiColor3D &inDiffuse, const aiColor3D &inSpecular, float inShininess)
 	{
@@ -144,5 +146,6 @@ private:
 	ID3D11Buffer				*perObjectVSCB;
 	ID3D11Buffer				*perObjectPSCB;
 	ID3D11SamplerState			*textureSampler;
+	ID3D11SamplerState			*mShadowMapSampler;
 	std::string vertexShaderID, pixelShaderID;
 };

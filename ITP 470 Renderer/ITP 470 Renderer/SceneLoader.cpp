@@ -69,6 +69,17 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 		ID3D11SamplerState *newSamplerState;
 		d3dDevice->CreateSamplerState(&textureSamplerDesc, &newSamplerState);
 
+		ZeroMemory(&textureSamplerDesc, sizeof(textureSamplerDesc));
+		textureSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		textureSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		textureSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		textureSamplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+		textureSamplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		ZeroMemory(textureSamplerDesc.BorderColor, 4);
+
+		ID3D11SamplerState *newShadowSamplerState;
+		d3dDevice->CreateSamplerState(&textureSamplerDesc, &newShadowSamplerState);
+
 		D3D11_TEXTURE2D_DESC textureDesc;
 		reinterpret_cast<ID3D11Texture2D*>(texture)->GetDesc(&textureDesc);
 		texture->Release();
@@ -76,7 +87,8 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 		textureNorm->Release();
 
 		inObject.AddTexture(newDiffuseShaderResourceView, newNormalMapShaderResourceView);
-		inObject.SetSamplerState(newSamplerState);
+		inObject.SetTextureSamplerState(newSamplerState);
+		inObject.SetShadowSamplerState(newShadowSamplerState);
 	}
 	hasTex = inScene->mMaterials[inIndex]->GetTexture(aiTextureType_NORMALS, 0, &texPath);
 	if (hasTex == AI_SUCCESS)
@@ -108,7 +120,7 @@ void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObjec
 		texture0->Release();
 
 		//inObject.SetDiffuseResourceView(newShaderResourceView);
-		inObject.SetSamplerState(newSamplerState);
+		inObject.SetTextureSamplerState(newSamplerState);
 	}
 	aiColor3D ambientColor, diffuseColor, specularColor;
 	float shininess;

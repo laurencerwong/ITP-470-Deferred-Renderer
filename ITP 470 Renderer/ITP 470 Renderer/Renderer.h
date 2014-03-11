@@ -56,6 +56,7 @@ public:
 	int mSkybox;
 
 	bool mUpdateObjects;
+	bool mUpdateLights;
 	ViewMode mCurrentViewMode;
 
 	SceneLoader *loader;
@@ -75,6 +76,8 @@ public:
 	ID3D11Buffer* perFrameVSConstantBuffer;
 	ID3D11Buffer* perFramePSConstantBuffer;
 	ID3D11DepthStencilState* mNoDoubleBlendDSS;
+	ID3D11RasterizerState *mNoShadowAcneState;
+
 
 	ShadowMap *shadowMap;
 	TexturedQuad *texturedQuad;

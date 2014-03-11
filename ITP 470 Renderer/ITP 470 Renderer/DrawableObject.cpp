@@ -52,7 +52,7 @@ void DrawableObject::UpdatePSConstantBuffer(ID3D11DeviceContext *d3dDeviceContex
 void DrawableObject::UpdateSamplerState(ID3D11DeviceContext *d3dDeviceContext)
 {
 	d3dDeviceContext->PSSetSamplers(0, 1, &textureSampler);
-
+	d3dDeviceContext->PSSetSamplers(1, 1, &mShadowMapSampler);
 }
 
 void DrawableObject::Draw(ID3D11DeviceContext* d3dDeviceContext)

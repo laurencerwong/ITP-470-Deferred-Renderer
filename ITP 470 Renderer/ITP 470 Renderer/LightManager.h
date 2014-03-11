@@ -34,6 +34,7 @@ public:
 	~LightManager();
 
 	void CreateDirectionalLight	(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition);
+	void UpdateDirectionalLight	(const XMVECTOR &inPosition);
 	void CreatePointLight		(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius);
 
 	void Update					(float dt);
