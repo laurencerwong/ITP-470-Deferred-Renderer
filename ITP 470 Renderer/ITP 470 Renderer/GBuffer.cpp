@@ -1,0 +1,200 @@
+#include "GBuffer.h"
+#include <cassert>
+
+GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHeight)
+: mWidth(inWidth)
+, mHeight(inHeight)
+{
+	//0 == Diffuse
+	//1 == Normal
+	//2 == Specular?
+	//3 == Depth
+
+	//Create Diffuse Resources
+	D3D11_TEXTURE2D_DESC diffuseTexDesc;
+	diffuseTexDesc.Width = inWidth;
+	diffuseTexDesc.Height = inHeight;
+	diffuseTexDesc.MipLevels = 1;
+	diffuseTexDesc.ArraySize = 1;
+	diffuseTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	diffuseTexDesc.SampleDesc.Count = 1;
+	diffuseTexDesc.SampleDesc.Quality = 0;
+	diffuseTexDesc.Usage = D3D11_USAGE_DEFAULT;
+	diffuseTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	diffuseTexDesc.CPUAccessFlags = 0;
+	diffuseTexDesc.MiscFlags = 0;
+
+	HRESULT hr = inDevice->CreateTexture2D(&diffuseTexDesc, 0, &mTex[0]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC diffuseSRVDesc;
+	diffuseSRVDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	diffuseSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	diffuseSRVDesc.Texture2D.MostDetailedMip = 0;
+	diffuseSRVDesc.Texture2D.MipLevels = 1;
+	hr = inDevice->CreateShaderResourceView(mTex[0], &diffuseSRVDesc, &mSRV[0]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_RENDER_TARGET_VIEW_DESC diffuseRTDesc;
+	diffuseRTDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	diffuseRTDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	diffuseRTDesc.Texture2D.MipSlice = 0;
+
+	hr = inDevice->CreateRenderTargetView(mTex[0], &diffuseRTDesc, &mRTV[0]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+
+
+	//Create Normal Resources
+	D3D11_TEXTURE2D_DESC normalTexDesc;
+	normalTexDesc.Width = inWidth;
+	normalTexDesc.Height = inHeight;
+	normalTexDesc.MipLevels = 1;
+	normalTexDesc.ArraySize = 1;
+	normalTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	normalTexDesc.SampleDesc.Count = 1;
+	normalTexDesc.SampleDesc.Quality = 0;
+	normalTexDesc.Usage = D3D11_USAGE_DEFAULT;
+	normalTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	normalTexDesc.CPUAccessFlags = 0;
+	normalTexDesc.MiscFlags = 0;
+
+	hr = inDevice->CreateTexture2D(&normalTexDesc, 0, &mTex[1]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC normalSRVDesc;
+	normalSRVDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	normalSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	normalSRVDesc.Texture2D.MostDetailedMip = 0;
+	normalSRVDesc.Texture2D.MipLevels = 1;
+	hr = inDevice->CreateShaderResourceView(mTex[1], &normalSRVDesc, &mSRV[1]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_RENDER_TARGET_VIEW_DESC normalRTDesc;
+	normalRTDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	normalRTDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	normalRTDesc.Texture2D.MipSlice = 0;
+
+	hr = inDevice->CreateRenderTargetView(mTex[1], &normalRTDesc, &mRTV[1]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	//Create Specular Resources
+	D3D11_TEXTURE2D_DESC specularTexDesc;
+	specularTexDesc.Width = inWidth;
+	specularTexDesc.Height = inHeight;
+	specularTexDesc.MipLevels = 1;
+	specularTexDesc.ArraySize = 1;
+	specularTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularTexDesc.SampleDesc.Count = 1;
+	specularTexDesc.SampleDesc.Quality = 0;
+	specularTexDesc.Usage = D3D11_USAGE_DEFAULT;
+	specularTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	specularTexDesc.CPUAccessFlags = 0;
+	specularTexDesc.MiscFlags = 0;
+
+	hr = inDevice->CreateTexture2D(&specularTexDesc, 0, &mTex[2]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC specularSRVDesc;
+	specularSRVDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	specularSRVDesc.Texture2D.MostDetailedMip = 0;
+	specularSRVDesc.Texture2D.MipLevels = 1;
+	hr = inDevice->CreateShaderResourceView(mTex[2], &specularSRVDesc, &mSRV[2]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_RENDER_TARGET_VIEW_DESC specularRTDesc;
+	specularRTDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularRTDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	specularRTDesc.Texture2D.MipSlice = 0;
+
+	hr = inDevice->CreateRenderTargetView(mTex[2], &specularRTDesc, &mRTV[2]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	//Create Depth Resources
+	D3D11_TEXTURE2D_DESC depthTexDesc;
+	depthTexDesc.Width = inWidth;
+	depthTexDesc.Height = inHeight;
+	depthTexDesc.MipLevels = 1;
+	depthTexDesc.ArraySize = 1;
+	depthTexDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	depthTexDesc.SampleDesc.Count = 1;
+	depthTexDesc.SampleDesc.Quality = 0;
+	depthTexDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	depthTexDesc.CPUAccessFlags = 0;
+	depthTexDesc.MiscFlags = 0;
+
+	hr = inDevice->CreateTexture2D(&depthTexDesc, 0, &mTex[3]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC depthSRVDesc;
+	depthSRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	depthSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	depthSRVDesc.Texture2D.MostDetailedMip = 0;
+	depthSRVDesc.Texture2D.MipLevels = 1;
+	hr = inDevice->CreateShaderResourceView(mTex[3], &depthSRVDesc, &mSRV[3]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthSVDesc;
+	depthSVDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthSVDesc.Texture2D.MipSlice = 0;
+	depthSVDesc.Flags = 0;
+
+	hr = inDevice->CreateDepthStencilView(mTex[3], &depthSVDesc, &mDSV);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+
+}
+
+
+GBuffer::~GBuffer()
+{
+}
+
+void GBuffer::BindBuffers(ID3D11DeviceContext* inDeviceContext)
+{
+	float clearTargetColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	inDeviceContext->OMSetRenderTargets(3, mRTV, mDSV);
+	inDeviceContext->ClearDepthStencilView(mDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	inDeviceContext->ClearRenderTargetView(mRTV[0], clearTargetColor);
+	inDeviceContext->ClearRenderTargetView(mRTV[1], clearTargetColor);
+	inDeviceContext->ClearRenderTargetView(mRTV[2], clearTargetColor);
+}

@@ -40,6 +40,7 @@ bool Renderer::Init()
 	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
 
 	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
+	gBuffer = new GBuffer(md3dDevice, mScreenViewport.Width, mScreenViewport.Height);
 	texturedQuad = new TexturedQuad(shaderManager);
 	texturedQuad->Initialize(md3dDevice);
 
@@ -67,6 +68,7 @@ bool Renderer::Init()
 void Renderer::OnResize()
 {
 	D3DApp::OnResize();
+	
 	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 0.1f, 1000.0f);
 	XMStoreFloat4x4(&mProj, P);
 }
@@ -109,6 +111,17 @@ void Renderer::DrawDepth()
 	{
 		object->UpdateVSConstantBuffer(md3dImmediateContext);
 		object->DrawWithoutTextures(md3dImmediateContext);
+	}
+}
+
+void Renderer::FillGBuffer()
+{
+	for (DrawableObject* object : loader->GetDrawableObjects())
+	{
+		shaderManager->SetVertexShader(object->GetVertexShader());
+		object->UpdateVSConstantBuffer(md3dImmediateContext);
+		object->UpdateSamplerState(md3dImmediateContext);
+		object->Draw(md3dImmediateContext);
 	}
 }
 
@@ -224,21 +237,39 @@ void Renderer::DrawScene()
 	md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
 	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	DrawSceneToShadowMap(shadowMap);
+	//DrawSceneToShadowMap(shadowMap);
+	gBuffer->BindBuffers(md3dImmediateContext);
+	shaderManager->SetPixelShader("gbufferfill.cso");
+	shaderManager->SetVertexShader("phongVS.cso");
 
 	//HHHHHAAAACKTACULAR
+	XMStoreFloat4x4(&mView, camera->GetViewMatrix());
+	XMStoreFloat4x4(&mProj, XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 0.1f, 1000.0f));
 	UpdatePerFrameVSCB();
+	FillGBuffer();
 
 	switch (mCurrentViewMode)
 	{
 	case VIEW_MODE_FULL:
 		texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
 		//texturedQuad->GetDraw()->SetPixelShader("quadPS.cso");
-		DrawPhong();
+		//DrawPhong();
 		break;
-	case VIEW_MODE_DEPTH:
+	case VIEW_MODE_SHADOW_DEPTH:
 		//texturedQuad->GetDraw()->SetPixelShader("quadDepthPS.cso");
 		texturedQuad->GetDraw()->SetTexture(0, shadowMap->GetDepthMapResourceView(), nullptr);
+		break;
+	case VIEW_MODE_DIFFUSE:
+		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[0], nullptr);
+		break;
+	case VIEW_MODE_NORMAL:
+		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[1], nullptr);
+		break;
+	case VIEW_MODE_SPECULAR:
+		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[2], nullptr);
+		break;
+	case VIEW_MODE_DEPTH:
+		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[3], nullptr);
 		break;
 	}
 	SetBackBufferRenderTarget();
@@ -291,6 +322,7 @@ void Renderer::InitializeMiscShaders()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	shaderManager->AddVertexShader("depthVS.cso", depthInputLayout, 1);
+	shaderManager->AddPixelShader("gbufferfill.cso");
 }
 
 void Renderer::OnKeyUp(WPARAM inKeyCode)
@@ -303,7 +335,7 @@ void Renderer::OnKeyUp(WPARAM inKeyCode)
 		break;
 	case L'v':
 	case L'V':
-		mCurrentViewMode = static_cast<ViewMode>((mCurrentViewMode + 1) % 2);
+		mCurrentViewMode = static_cast<ViewMode>((mCurrentViewMode + 1) % 6);
 		break;
 	case L'l':
 	case L'L':

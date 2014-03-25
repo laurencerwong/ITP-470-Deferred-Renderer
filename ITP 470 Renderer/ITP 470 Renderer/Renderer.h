@@ -5,6 +5,7 @@
 #include "ShaderManager.h"
 #include "TexturedQuad.h"
 #include "ShadowMap.h"
+#include "GBuffer.h"
 
 struct perFrameCBStruct
 {
@@ -22,8 +23,12 @@ struct perFrameCBPSStruct
 
 typedef enum ViewMode
 {
+	VIEW_MODE_SHADOW_DEPTH,
 	VIEW_MODE_DEPTH,
-	VIEW_MODE_FULL
+	VIEW_MODE_FULL,
+	VIEW_MODE_DIFFUSE,
+	VIEW_MODE_NORMAL,
+	VIEW_MODE_SPECULAR
 } ViewMode;
 
 class Renderer : public D3DApp
@@ -41,6 +46,7 @@ public:
 	void DrawPhong();
 	void DrawDepth();
 	void DrawDepthStencil();
+	void FillGBuffer();
 	void DeclareShaderConstants(ID3D11Device* d3dDevice);
 	void CreateDepthStencilState(ID3D11Device* d3dDevice);
 	void SetBackBufferRenderTarget();
@@ -80,5 +86,6 @@ public:
 
 
 	ShadowMap *shadowMap;
+	GBuffer *gBuffer;
 	TexturedQuad *texturedQuad;
 };
