@@ -149,8 +149,6 @@ void Renderer::UpdatePerFrameVSCB()
 	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
 	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
-	//constantVSMatrix->mProj = XMMatrixOrthographicLH(64, 48, 0.1f, 500.0f);
-	//constantVSMatrix->mView = camera->GetViewMatrix();
 	constantVSMatrix->mView = XMLoadFloat4x4(&mView);
 	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);

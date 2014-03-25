@@ -94,6 +94,7 @@
     <ClCompile Include="FrankLunaCode\d3dUtil.cpp" />
     <ClCompile Include="FrankLunaCode\GameTimer.cpp" />
     <ClCompile Include="FrankLunaCode\MathHelper.cpp" />
+    <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -116,6 +117,7 @@
     <ClInclude Include="FrankLunaCode\GameTimer.h" />
     <ClInclude Include="FrankLunaCode\MathHelper.h" />
     <ClInclude Include="DrawableObject.h" />
+    <ClInclude Include="GBuffer.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="MeshData.h" />

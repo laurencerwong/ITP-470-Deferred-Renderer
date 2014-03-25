@@ -21,7 +21,6 @@ typedef struct PointLight
 	XMFLOAT3 mPosition;
 	float mInnerRadius, mOuterRadius, pad0, pad1, pad2;
 
-
 } PointLight;
 
 
