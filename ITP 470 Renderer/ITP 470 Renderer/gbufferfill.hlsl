@@ -38,6 +38,6 @@ PS_OUT main(PS_IN input)
 	output.normal = 2.0f * output.normal - 1.0f;
 	output.normal = normalize(mul(output.normal, NTB));
 
-	output.specular = float4(input.position.xyz, 1.0f);
+	output.specular = 1.0 - (input.position.z / input.position.w);
 	return output;
 }

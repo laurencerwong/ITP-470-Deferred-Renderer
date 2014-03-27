@@ -1,9 +1,27 @@
-﻿Build started 3/24/2014 10:49:03 PM.
+﻿Build started 3/26/2014 10:09:55 PM.
      1>Project "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\ITP 470 Renderer\ITP 470 Renderer.vcxproj" on node 2 (Build target(s)).
-     1>FxCompile:
-         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\gbufferfill.cso" /Od /Zi gbufferfill.hlsl 
-         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\gbufferfill.cso
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt GBuffer.cpp
+         GBuffer.cpp
        Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.exe" /INCREMENTAL /NOLOGO assimp.lib d3d11.lib D3DCompiler.lib Effects11d.lib dxgi.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.lib" /MACHINE:X86 Debug\Camera.obj
+         Debug\DDSTextureLoader.obj
+         Debug\FileReaderWriter.obj
+         Debug\d3dApp.obj
+         Debug\d3dUtil.obj
+         Debug\GameTimer.obj
+         Debug\MathHelper.obj
+         Debug\GBuffer.obj
+         Debug\InputManager.obj
+         Debug\LightManager.obj
+         Debug\main.obj
+         Debug\DrawableObject.obj
+         Debug\MeshData.obj
+         Debug\Renderer.obj
+         Debug\SceneLoader.obj
+         Debug\ShaderManager.obj
+         Debug\ShadowMap.obj
+         Debug\TexturedQuad.obj
          ITP 470 Renderer.vcxproj -> C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.exe
        PostBuildEvent:
          xcopy /y /d "assimp/bin" "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\"
@@ -13,4 +31,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.12
+Time Elapsed 00:00:01.18

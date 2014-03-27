@@ -102,7 +102,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	specularTexDesc.Height = inHeight;
 	specularTexDesc.MipLevels = 1;
 	specularTexDesc.ArraySize = 1;
-	specularTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularTexDesc.Format = DXGI_FORMAT_R32_FLOAT;//DXGI_FORMAT_R32G32B32A32_FLOAT;
 	specularTexDesc.SampleDesc.Count = 1;
 	specularTexDesc.SampleDesc.Quality = 0;
 	specularTexDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -117,7 +117,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC specularSRVDesc;
-	specularSRVDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;;
 	specularSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	specularSRVDesc.Texture2D.MostDetailedMip = 0;
 	specularSRVDesc.Texture2D.MipLevels = 1;
@@ -128,7 +128,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	}
 
 	D3D11_RENDER_TARGET_VIEW_DESC specularRTDesc;
-	specularRTDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularRTDesc.Format = DXGI_FORMAT_R32_FLOAT;//DXGI_FORMAT_R32G32B32A32_FLOAT;
 	specularRTDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	specularRTDesc.Texture2D.MipSlice = 0;
 

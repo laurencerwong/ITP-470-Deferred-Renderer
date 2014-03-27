@@ -3,6 +3,7 @@
 #include <vector>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include "MeshData.h"
 
 using namespace DirectX;
 
@@ -36,6 +37,8 @@ public:
 	void UpdateDirectionalLight	(const XMVECTOR &inPosition);
 	void CreatePointLight		(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius);
 
+	const MeshData* GetLightVolumeMesh() { return &mLightVolumeMesh; }
+
 	void Update					(float dt);
 
 	std::vector<PointLight>			const& GetPointLights()			{ return mPointLights; }
@@ -44,6 +47,6 @@ public:
 private:
 	std::vector<PointLight>			mPointLights;
 	std::vector<DirectionalLight>	mDirectionalLights;
-
+	MeshData mLightVolumeMesh;
 };
 
