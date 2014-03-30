@@ -117,10 +117,13 @@ void Renderer::DrawDepth()
 
 void Renderer::FillGBuffer()
 {
+	ID3D11ShaderResourceView* psShaderResourceViews = { shadowMap->GetDepthMapResourceView() };
+	md3dImmediateContext->PSSetShaderResources(2, 1, &psShaderResourceViews);
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
 		shaderManager->SetVertexShader(object->GetVertexShader());
 		object->UpdatePSConstantBuffer(md3dImmediateContext);
+		object->SetShadowTransform(XMLoadFloat4x4(&mShadowTransform));
 		object->UpdateVSConstantBuffer(md3dImmediateContext);
 		object->UpdateSamplerState(md3dImmediateContext);
 		object->Draw(md3dImmediateContext);
@@ -134,6 +137,7 @@ void Renderer::DrawDeferred()
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	md3dImmediateContext->Map(perFramePSDeferredBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameDeferredPSStruct *cbDeferred = (perFrameDeferredPSStruct*)mappedResource.pData;
+	cbDeferred->gShadowTransform = XMLoadFloat4x4(&mShadowTransform);
 	cbDeferred->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
 	cbDeferred->gCamPos = XMLoadFloat3(&camera->GetPosition());
 	md3dImmediateContext->Unmap(perFramePSDeferredBuffer, 0);
@@ -292,10 +296,10 @@ void Renderer::DrawScene()
 	md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
 	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	//DrawSceneToShadowMap(shadowMap);
+	DrawSceneToShadowMap(shadowMap);
 	gBuffer->BindBuffers(md3dImmediateContext);
 	shaderManager->SetPixelShader("gbufferfill.cso");
-	shaderManager->SetVertexShader("phongVS.cso");
+	shaderManager->SetVertexShader("phongVSShadowMap.cso");
 
 	//HHHHHAAAACKTACULAR
 	XMStoreFloat4x4(&mView, camera->GetViewMatrix());

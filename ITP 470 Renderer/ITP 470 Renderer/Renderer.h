@@ -16,6 +16,7 @@ struct perFrameCBStruct
 
 struct perFrameDeferredPSStruct
 {
+	XMMATRIX gShadowTransform;
 	XMVECTOR gAmbientColor;
 	XMVECTOR gCamPos;
 };
