@@ -53,6 +53,10 @@ private:
 	std::vector<DirectionalLight>	mDirectionalLights;
 	MeshData mLightVolumeMesh;
 
+	XMFLOAT3 mDirLightDesiredDir;
+	XMFLOAT3 mDirLightPreviousDir;
+	float mDirLightDesiredDirLerp;
+
 	struct PerPointLightCBStruct
 	{
 		PointLight mPointlight;

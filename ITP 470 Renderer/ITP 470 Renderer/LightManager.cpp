@@ -30,6 +30,8 @@ void LightManager::Initialize(ID3D11Device *inDevice)
 	perLightConstantBufferDesc.StructureByteStride = 0;
 
 	inDevice->CreateBuffer(&perLightConstantBufferDesc, NULL, &mPerDirLightCB);
+
+	mDirLightDesiredDirLerp = 2.0f;
 }
 
 void LightManager::SetShaderConstant(ID3D11DeviceContext* inDeviceContext, PointLight &inPointLight)
@@ -57,6 +59,7 @@ void LightManager::CreateDirectionalLight(const XMFLOAT4 &inColor, const XMFLOAT
 	DirectionalLight newDirectionalLight;
 	newDirectionalLight.mColor = inColor;
 	XMStoreFloat3(&newDirectionalLight.mDirection, XMVector3Normalize(XMLoadFloat3(&inPosition)));
+	XMStoreFloat3(&mDirLightDesiredDir, XMVector3Normalize(XMLoadFloat3(&inPosition)));
 	XMStoreFloat4(&newDirectionalLight.mSpecularColor,  XMLoadFloat4(&inColor) + XMLoadFloat4(&XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
 	mDirectionalLights.push_back(newDirectionalLight);
 	
@@ -64,7 +67,9 @@ void LightManager::CreateDirectionalLight(const XMFLOAT4 &inColor, const XMFLOAT
 
 void LightManager::UpdateDirectionalLight(const XMVECTOR &inPosition)
 {
-	XMStoreFloat3(&mDirectionalLights[0].mDirection, XMVector3Normalize(inPosition));
+	mDirLightPreviousDir = mDirectionalLights[0].mDirection;
+	XMStoreFloat3(&mDirLightDesiredDir, XMVector3Normalize(inPosition));
+	mDirLightDesiredDirLerp = 0.0f;
 }
 
 void LightManager::CreatePointLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius)
@@ -95,5 +100,14 @@ void LightManager::Update(float dt)
 			it.mVelocity *= -1.0;
 		}
 		it.mPosition.x += it.mVelocity * dt;
+	}
+	mDirLightDesiredDirLerp += dt;
+	XMVECTOR prevDirLightDir = XMLoadFloat3(&mDirLightPreviousDir);
+	XMVECTOR desDirLightDir = XMLoadFloat3(&mDirLightDesiredDir);
+	XMStoreFloat3(&mDirectionalLights[0].mDirection, XMVectorLerp(prevDirLightDir, desDirLightDir, mDirLightDesiredDirLerp / 4.0f ));
+	if (mDirLightDesiredDirLerp > 4.0f)
+	{
+		mDirLightDesiredDir.x *= -1;
+		UpdateDirectionalLight(XMLoadFloat3(&mDirLightDesiredDir));
 	}
 }
