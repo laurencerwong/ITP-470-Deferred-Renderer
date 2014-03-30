@@ -8,11 +8,24 @@ SamplerState linearTextureSampler
 	AddressV = Wrap;
 };
 
+struct Material
+{
+	float4 mAmbient;
+	float4 mDiffuse;
+	float4 mSpecular;
+}; 
+
+cbuffer cbPerObject : register(b1)
+{
+	Material gMaterial;
+}
+
 struct PS_OUT
 {
 	float4 diffuse	: SV_TARGET0;
 	float3 normal	: SV_TARGET1;
 	float4 specular	: SV_TARGET2;
+	float4 position : SV_TARGET3;
 };
 
 struct PS_IN
@@ -38,6 +51,7 @@ PS_OUT main(PS_IN input)
 	output.normal = 2.0f * output.normal - 1.0f;
 	output.normal = normalize(mul(output.normal, NTB));
 
-	output.specular = 1.0 - (input.position.z / input.position.w);
+	output.specular = gMaterial.mSpecular;
+	output.position = float4(input.posWorld, 1.0f);
 	return output;
 }

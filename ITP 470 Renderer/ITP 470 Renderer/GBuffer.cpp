@@ -7,7 +7,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 {
 	//0 == Diffuse
 	//1 == Normal
-	//2 == Specular?
+	//2 == Specular
 	//3 == Depth
 
 	//Create Diffuse Resources
@@ -102,7 +102,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	specularTexDesc.Height = inHeight;
 	specularTexDesc.MipLevels = 1;
 	specularTexDesc.ArraySize = 1;
-	specularTexDesc.Format = DXGI_FORMAT_R32_FLOAT;//DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	specularTexDesc.SampleDesc.Count = 1;
 	specularTexDesc.SampleDesc.Quality = 0;
 	specularTexDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -117,7 +117,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC specularSRVDesc;
-	specularSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;;
+	specularSRVDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;;
 	specularSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	specularSRVDesc.Texture2D.MostDetailedMip = 0;
 	specularSRVDesc.Texture2D.MipLevels = 1;
@@ -128,11 +128,54 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	}
 
 	D3D11_RENDER_TARGET_VIEW_DESC specularRTDesc;
-	specularRTDesc.Format = DXGI_FORMAT_R32_FLOAT;//DXGI_FORMAT_R32G32B32A32_FLOAT;
+	specularRTDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	specularRTDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	specularRTDesc.Texture2D.MipSlice = 0;
 
 	hr = inDevice->CreateRenderTargetView(mTex[2], &specularRTDesc, &mRTV[2]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+
+	//Create Position Resources
+	D3D11_TEXTURE2D_DESC positionTexDesc;
+	positionTexDesc.Width = inWidth;
+	positionTexDesc.Height = inHeight;
+	positionTexDesc.MipLevels = 1;
+	positionTexDesc.ArraySize = 1;
+	positionTexDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	positionTexDesc.SampleDesc.Count = 1;
+	positionTexDesc.SampleDesc.Quality = 0;
+	positionTexDesc.Usage = D3D11_USAGE_DEFAULT;
+	positionTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	positionTexDesc.CPUAccessFlags = 0;
+	positionTexDesc.MiscFlags = 0;
+
+	hr = inDevice->CreateTexture2D(&positionTexDesc, 0, &mTex[3]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC positionSRVDesc;
+	positionSRVDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	positionSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	positionSRVDesc.Texture2D.MostDetailedMip = 0;
+	positionSRVDesc.Texture2D.MipLevels = 1;
+	hr = inDevice->CreateShaderResourceView(mTex[3], &positionSRVDesc, &mSRV[3]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_RENDER_TARGET_VIEW_DESC positionRTDesc;
+	positionRTDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	positionRTDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	positionRTDesc.Texture2D.MipSlice = 0;
+
+	hr = inDevice->CreateRenderTargetView(mTex[3], &positionRTDesc, &mRTV[3]);
 	if (FAILED(hr))
 	{
 		assert(false);
@@ -152,7 +195,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	depthTexDesc.CPUAccessFlags = 0;
 	depthTexDesc.MiscFlags = 0;
 
-	hr = inDevice->CreateTexture2D(&depthTexDesc, 0, &mTex[3]);
+	hr = inDevice->CreateTexture2D(&depthTexDesc, 0, &mTex[4]);
 	if (FAILED(hr))
 	{
 		assert(false);
@@ -163,7 +206,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	depthSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	depthSRVDesc.Texture2D.MostDetailedMip = 0;
 	depthSRVDesc.Texture2D.MipLevels = 1;
-	hr = inDevice->CreateShaderResourceView(mTex[3], &depthSRVDesc, &mSRV[3]);
+	hr = inDevice->CreateShaderResourceView(mTex[4], &depthSRVDesc, &mSRV[4]);
 	if (FAILED(hr))
 	{
 		assert(false);
@@ -175,13 +218,11 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	depthSVDesc.Texture2D.MipSlice = 0;
 	depthSVDesc.Flags = 0;
 
-	hr = inDevice->CreateDepthStencilView(mTex[3], &depthSVDesc, &mDSV);
+	hr = inDevice->CreateDepthStencilView(mTex[4], &depthSVDesc, &mDSV);
 	if (FAILED(hr))
 	{
 		assert(false);
 	}
-
-
 }
 
 
@@ -192,9 +233,15 @@ GBuffer::~GBuffer()
 void GBuffer::BindBuffers(ID3D11DeviceContext* inDeviceContext)
 {
 	float clearTargetColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	inDeviceContext->OMSetRenderTargets(3, mRTV, mDSV);
+	inDeviceContext->OMSetRenderTargets(4, mRTV, mDSV);
 	inDeviceContext->ClearDepthStencilView(mDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	inDeviceContext->ClearRenderTargetView(mRTV[0], clearTargetColor);
 	inDeviceContext->ClearRenderTargetView(mRTV[1], clearTargetColor);
 	inDeviceContext->ClearRenderTargetView(mRTV[2], clearTargetColor);
+	inDeviceContext->ClearRenderTargetView(mRTV[3], clearTargetColor);
+}
+
+void GBuffer::SetShaderResources(ID3D11DeviceContext* inDeviceContext)
+{
+	inDeviceContext->PSSetShaderResources(0, 5, mSRV);
 }

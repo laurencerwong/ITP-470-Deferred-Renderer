@@ -10,6 +10,29 @@ LightManager::~LightManager()
 	mDirectionalLights.clear();
 }
 
+void LightManager::Initialize(ID3D11Device *inDevice)
+{
+	D3D11_BUFFER_DESC perLightConstantBufferDesc;
+	perLightConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	perLightConstantBufferDesc.ByteWidth = sizeof(PerPointLightCBStruct);
+	perLightConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perLightConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perLightConstantBufferDesc.MiscFlags = 0;
+	perLightConstantBufferDesc.StructureByteStride = 0;
+
+	inDevice->CreateBuffer(&perLightConstantBufferDesc, NULL, &mPerPointLightCB);
+}
+
+void LightManager::SetShaderConstant(ID3D11DeviceContext* inDeviceContext, PointLight &inPointLight)
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	inDeviceContext->Map(mPerPointLightCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	PerPointLightCBStruct *perPointLightCB = (PerPointLightCBStruct*)mappedResource.pData;
+	perPointLightCB->mPointlight = inPointLight;
+	inDeviceContext->Unmap(mPerPointLightCB, 0);
+	inDeviceContext->PSSetConstantBuffers(1, 1, &mPerPointLightCB);
+}
+
 void LightManager::CreateDirectionalLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition)
 {
 	

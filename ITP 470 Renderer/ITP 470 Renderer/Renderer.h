@@ -13,6 +13,12 @@ struct perFrameCBStruct
 	XMMATRIX mView;
 };
 
+struct perFrameDeferredPSStruct
+{
+	XMVECTOR gAmbientColor;
+	XMVECTOR gCamPos;
+};
+
 struct perFrameCBPSStruct
 {
 	DirectionalLight gDirLight;
@@ -43,6 +49,7 @@ public:
 	void BuildShadowTransform();
 	void DrawScene();
 	void DrawSceneToShadowMap(ShadowMap* inShadowMap);
+	void DrawDeferred();
 	void DrawPhong();
 	void DrawDepth();
 	void DrawDepthStencil();
@@ -81,6 +88,7 @@ public:
 	ID3D11PixelShader* colorPS;
 	ID3D11Buffer* perFrameVSConstantBuffer;
 	ID3D11Buffer* perFramePSConstantBuffer;
+	ID3D11Buffer* perFramePSDeferredBuffer;
 	ID3D11DepthStencilState* mNoDoubleBlendDSS;
 	ID3D11RasterizerState *mNoShadowAcneState;
 
@@ -88,4 +96,5 @@ public:
 	ShadowMap *shadowMap;
 	GBuffer *gBuffer;
 	TexturedQuad *texturedQuad;
+	TexturedQuad *deferredRenderTarget;
 };

@@ -19,6 +19,8 @@ bool Renderer::Init()
 {
 	if (!D3DApp::Init())
 		return false;
+	lightManager->Initialize(md3dDevice);
+
 	shaderManager = new ShaderManager(md3dDevice, md3dImmediateContext);
 	loader = new SceneLoader(md3dDevice, shaderManager);
 
@@ -34,15 +36,18 @@ bool Renderer::Init()
 	lightManager->CreateDirectionalLight(XMFLOAT4(1.0f, 0.78f, 0.5f, 1.0f), XMFLOAT3(5.0f, -5.0f, 0.0f));
 
 
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 5.0f, -5.0f), 1.0f, 8.0f);
+	/*lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 5.0f, -5.0f), 1.0f, 8.0f);
 	lightManager->CreatePointLight(XMFLOAT4(0.8f, 0.0f, 0.8f, 1.0f), XMFLOAT3(15.0f, 15.0f, -5.0f), 1.0f, 8.0f);
 	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-5.0f, -100.0f, 0.0f), 1.0f, 36.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, -100.0f, 0.0f), 1.0f, 36.0f);
+	*/
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 5.0f, 0.0f), 1.0f, 36.0f);
 
 	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
 	gBuffer = new GBuffer(md3dDevice, mScreenViewport.Width, mScreenViewport.Height);
 	texturedQuad = new TexturedQuad(shaderManager);
 	texturedQuad->Initialize(md3dDevice);
+	deferredRenderTarget = new TexturedQuad(shaderManager);
+	deferredRenderTarget->Initialize(md3dDevice);
 
 	InitializeMiscShaders();
 
@@ -119,10 +124,35 @@ void Renderer::FillGBuffer()
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
 		shaderManager->SetVertexShader(object->GetVertexShader());
+		object->UpdatePSConstantBuffer(md3dImmediateContext);
 		object->UpdateVSConstantBuffer(md3dImmediateContext);
 		object->UpdateSamplerState(md3dImmediateContext);
 		object->Draw(md3dImmediateContext);
 	}
+}
+
+void Renderer::DrawDeferred()
+{
+	//deferredRenderTarget->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	md3dImmediateContext->Map(perFramePSDeferredBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFrameDeferredPSStruct *cbDeferred = (perFrameDeferredPSStruct*)mappedResource.pData;
+	cbDeferred->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
+	cbDeferred->gCamPos = XMLoadFloat3(&camera->GetPosition());
+	md3dImmediateContext->Unmap(perFramePSDeferredBuffer, 0);
+	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSDeferredBuffer);
+
+	shaderManager->SetPixelShader("point_lightingpassPS.cso");
+
+	gBuffer->SetShaderResources(md3dImmediateContext);
+
+	PointLight p = lightManager->GetPointLights()[0];
+	lightManager->SetShaderConstant(md3dImmediateContext, p);
+	deferredRenderTarget->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
+	shaderManager->SetVertexShader("quadVS.cso");
+	md3dImmediateContext->DrawIndexed(6, 0, 0);
 }
 
 void Renderer::DrawPhong()
@@ -251,35 +281,61 @@ void Renderer::DrawScene()
 	switch (mCurrentViewMode)
 	{
 	case VIEW_MODE_FULL:
-		texturedQuad->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+		SetBackBufferRenderTarget();
+		DrawDeferred();
+		//texturedQuad->GetDraw()->SetTexture(0, deferredRenderTarget->GetShaderResourceView(), nullptr);
 		//texturedQuad->GetDraw()->SetPixelShader("quadPS.cso");
 		//DrawPhong();
 		break;
 	case VIEW_MODE_SHADOW_DEPTH:
 		//texturedQuad->GetDraw()->SetPixelShader("quadDepthPS.cso");
 		texturedQuad->GetDraw()->SetTexture(0, shadowMap->GetDepthMapResourceView(), nullptr);
+		SetBackBufferRenderTarget();
+
+		shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
+		shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
+		texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+
+		texturedQuad->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+		texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 		break;
 	case VIEW_MODE_DIFFUSE:
 		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[0], nullptr);
+		SetBackBufferRenderTarget();
+
+		shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
+		shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
+		texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+
+		texturedQuad->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+		texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 		break;
 	case VIEW_MODE_NORMAL:
 		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[1], nullptr);
+		SetBackBufferRenderTarget();
+
+		shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
+		shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
+		texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+
+		texturedQuad->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+		texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 		break;
 	case VIEW_MODE_SPECULAR:
 		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[2], nullptr);
+		SetBackBufferRenderTarget();
+
+		shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
+		shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
+		texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+
+		texturedQuad->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+		texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 		break;
 	case VIEW_MODE_DEPTH:
 		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[3], nullptr);
 		break;
 	}
-	SetBackBufferRenderTarget();
-	
-	shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
-	shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
-	texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
-
-	texturedQuad->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
-	texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 
 	ID3D11ShaderResourceView* unBindAllResources[16] = { 0 };
 	md3dImmediateContext->PSSetShaderResources(0, 16, unBindAllResources);
@@ -306,6 +362,14 @@ void Renderer::DeclareShaderConstants(ID3D11Device* d3dDevice)
 	perFrameConstantBufferDesc.StructureByteStride = 0;
 
 	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSConstantBuffer);
+
+	perFrameConstantBufferDesc.ByteWidth = sizeof(perFrameDeferredPSStruct);
+	perFrameConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perFrameConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perFrameConstantBufferDesc.MiscFlags = 0;
+	perFrameConstantBufferDesc.StructureByteStride = 0;
+
+	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSDeferredBuffer);
 }
 
 void Renderer::SetBackBufferRenderTarget()
@@ -322,7 +386,10 @@ void Renderer::InitializeMiscShaders()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	shaderManager->AddVertexShader("depthVS.cso", depthInputLayout, 1);
+
 	shaderManager->AddPixelShader("gbufferfill.cso");
+
+	shaderManager->AddPixelShader("point_lightingpassPS.cso");
 }
 
 void Renderer::OnKeyUp(WPARAM inKeyCode)

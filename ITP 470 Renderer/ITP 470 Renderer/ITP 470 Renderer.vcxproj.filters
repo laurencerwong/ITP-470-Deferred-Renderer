@@ -175,5 +175,11 @@
     <FxCompile Include="gbufferfill.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
+    <FxCompile Include="point_lightingpassVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="point_lightingpassPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

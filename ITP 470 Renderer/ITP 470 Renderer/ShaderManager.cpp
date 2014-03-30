@@ -76,6 +76,7 @@ void ShaderManager::SetVertexShader(const std::string &inShaderName)
 		assert(false);
 	}
 #endif
+	mCurrentVertexShader = inShaderName;
 	md3dDeviceContext->VSSetShader(mVSWithLayouts[inShaderName].mVertexShader, 0, 0);
 	md3dDeviceContext->IASetInputLayout(mVSWithLayouts[inShaderName].mInputLayout);
 }
@@ -92,5 +93,6 @@ void ShaderManager::SetPixelShader(const std::string &inShaderName)
 		assert(false);
 	}
 #endif
+	mCurrentPixelShader = inShaderName;
 	md3dDeviceContext->PSSetShader(mPixelShaders[inShaderName], 0, 0);
 }

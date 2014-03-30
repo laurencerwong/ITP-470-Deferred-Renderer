@@ -30,8 +30,9 @@ class LightManager
 
 public:
 	LightManager();
-	LightManager(const LightManager &inLightManager);
 	~LightManager();
+	void Initialize(ID3D11Device *inDevice);
+	void SetShaderConstant(ID3D11DeviceContext *inDeviceContext, PointLight &inPointLight);
 
 	void CreateDirectionalLight	(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition);
 	void UpdateDirectionalLight	(const XMVECTOR &inPosition);
@@ -45,8 +46,16 @@ public:
 	std::vector<DirectionalLight>	const& GetDirectionalLights()	{ return mDirectionalLights; }
 
 private:
+	LightManager(const LightManager &inLightManager);
+
 	std::vector<PointLight>			mPointLights;
 	std::vector<DirectionalLight>	mDirectionalLights;
 	MeshData mLightVolumeMesh;
+
+	struct PerPointLightCBStruct
+	{
+		PointLight mPointlight;
+	};
+	ID3D11Buffer* mPerPointLightCB;
 };
 
