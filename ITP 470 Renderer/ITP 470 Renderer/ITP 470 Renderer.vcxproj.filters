@@ -72,6 +72,9 @@
     <ClCompile Include="GBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LightAccumulationBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -137,6 +140,9 @@
     <ClInclude Include="GBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightAccumulationBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Effects\colorVS.hlsl">
@@ -179,6 +185,9 @@
       <Filter>Effect Files</Filter>
     </FxCompile>
     <FxCompile Include="point_lightingpassPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="lightBlendPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
   </ItemGroup>

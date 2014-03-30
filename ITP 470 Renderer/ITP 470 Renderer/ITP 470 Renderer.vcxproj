@@ -96,6 +96,7 @@
     <ClCompile Include="FrankLunaCode\MathHelper.cpp" />
     <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="LightAccumulationBuffer.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DrawableObject.cpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="DrawableObject.h" />
     <ClInclude Include="GBuffer.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="LightAccumulationBuffer.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="MeshData.h" />
     <ClInclude Include="Renderer.h" />
@@ -148,6 +150,11 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="gbufferfill.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="lightBlendPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.1</ShaderModel>

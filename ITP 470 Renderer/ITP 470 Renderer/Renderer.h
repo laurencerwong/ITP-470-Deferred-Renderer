@@ -6,6 +6,7 @@
 #include "TexturedQuad.h"
 #include "ShadowMap.h"
 #include "GBuffer.h"
+#include "LightAccumulationBuffer.h"
 
 struct perFrameCBStruct
 {
@@ -17,6 +18,10 @@ struct perFrameDeferredPSStruct
 {
 	XMVECTOR gAmbientColor;
 	XMVECTOR gCamPos;
+};
+struct perFrameCombinationPSStruct
+{
+	XMVECTOR gAmbientColor;
 };
 
 struct perFrameCBPSStruct
@@ -89,12 +94,14 @@ public:
 	ID3D11Buffer* perFrameVSConstantBuffer;
 	ID3D11Buffer* perFramePSConstantBuffer;
 	ID3D11Buffer* perFramePSDeferredBuffer;
+	ID3D11Buffer* perFramePSCombinationBuffer;
 	ID3D11DepthStencilState* mNoDoubleBlendDSS;
 	ID3D11RasterizerState *mNoShadowAcneState;
 
 
 	ShadowMap *shadowMap;
 	GBuffer *gBuffer;
+	LightAccumulationBuffer *laBuffer;
 	TexturedQuad *texturedQuad;
 	TexturedQuad *deferredRenderTarget;
 };

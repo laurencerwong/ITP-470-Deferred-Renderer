@@ -39,7 +39,7 @@ struct PixelIn
 	float2 tex : TEXCOORD0;
 };
 
-float4 main(PixelIn input) : SV_TARGET
+float4 main(PixelIn input) : SV_TARGET0
 {
 	float4 diffuse = gDiffuseTex.Sample(linearTextureSampler, input.tex);
 	float4 normal = normalize(gNormalTex.Sample(linearTextureSampler, input.tex));
@@ -50,7 +50,7 @@ float4 main(PixelIn input) : SV_TARGET
 	float3 pixToLight = pointLight.mPosition - position.xyz;
 	float distToLight = length(pixToLight);
 	float lerpAmount = 0.0f;
-	float4 output = gAmbientColor * pointLight.mColor;
+	float4 output = float4(0.0, 0.0, 0.0, 0.0);// = gAmbientColor * pointLight.mColor;
 	lerpAmount = BETWEEN_0_1((distToLight - pointLight.mInnerRadius) / (pointLight.mOuterRadius - pointLight.mInnerRadius));
 
 	pixToLight /= distToLight;

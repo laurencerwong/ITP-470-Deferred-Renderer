@@ -44,6 +44,7 @@ bool Renderer::Init()
 
 	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
 	gBuffer = new GBuffer(md3dDevice, mScreenViewport.Width, mScreenViewport.Height);
+	laBuffer = new LightAccumulationBuffer(md3dDevice, mScreenViewport.Width, mScreenViewport.Height);
 	texturedQuad = new TexturedQuad(shaderManager);
 	texturedQuad->Initialize(md3dDevice);
 	deferredRenderTarget = new TexturedQuad(shaderManager);
@@ -133,7 +134,8 @@ void Renderer::FillGBuffer()
 
 void Renderer::DrawDeferred()
 {
-	//deferredRenderTarget->SetAsRenderTarget(md3dImmediateContext, mDepthStencilView);
+	//Lighting to light accumulation buffer
+	laBuffer->BindBuffers(md3dImmediateContext, mDepthStencilView);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	md3dImmediateContext->Map(perFramePSDeferredBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameDeferredPSStruct *cbDeferred = (perFrameDeferredPSStruct*)mappedResource.pData;
@@ -143,11 +145,27 @@ void Renderer::DrawDeferred()
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSDeferredBuffer);
 
 	shaderManager->SetPixelShader("point_lightingpassPS.cso");
-
 	gBuffer->SetShaderResources(md3dImmediateContext);
 
 	PointLight p = lightManager->GetPointLights()[0];
 	lightManager->SetShaderConstant(md3dImmediateContext, p);
+	deferredRenderTarget->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
+	shaderManager->SetVertexShader("quadVS.cso");
+	md3dImmediateContext->DrawIndexed(6, 0, 0);
+
+	//combine buffers
+	SetBackBufferRenderTarget();
+	md3dImmediateContext->Map(perFramePSCombinationBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFrameCombinationPSStruct *cbCombination = (perFrameCombinationPSStruct*)mappedResource.pData;
+	cbCombination->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
+	md3dImmediateContext->Unmap(perFramePSCombinationBuffer, 0);
+	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSCombinationBuffer);
+
+	shaderManager->SetPixelShader("lightBlendPS.cso");
+	md3dImmediateContext->PSSetShaderResources(0, 1, &gBuffer->GetShaderResourceViews()[0]);
+	md3dImmediateContext->PSSetShaderResources(1, 1, laBuffer->GetShaderResourceViews());
 	deferredRenderTarget->GetDraw()->UpdateSamplerState(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
@@ -281,7 +299,6 @@ void Renderer::DrawScene()
 	switch (mCurrentViewMode)
 	{
 	case VIEW_MODE_FULL:
-		SetBackBufferRenderTarget();
 		DrawDeferred();
 		//texturedQuad->GetDraw()->SetTexture(0, deferredRenderTarget->GetShaderResourceView(), nullptr);
 		//texturedQuad->GetDraw()->SetPixelShader("quadPS.cso");
@@ -370,11 +387,20 @@ void Renderer::DeclareShaderConstants(ID3D11Device* d3dDevice)
 	perFrameConstantBufferDesc.StructureByteStride = 0;
 
 	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSDeferredBuffer);
+
+	perFrameConstantBufferDesc.ByteWidth = sizeof(perFrameCombinationPSStruct);
+	perFrameConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perFrameConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perFrameConstantBufferDesc.MiscFlags = 0;
+	perFrameConstantBufferDesc.StructureByteStride = 0;
+
+	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSCombinationBuffer);
 }
 
 void Renderer::SetBackBufferRenderTarget()
 {
 	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	return;
 }
 
@@ -390,6 +416,7 @@ void Renderer::InitializeMiscShaders()
 	shaderManager->AddPixelShader("gbufferfill.cso");
 
 	shaderManager->AddPixelShader("point_lightingpassPS.cso");
+	shaderManager->AddPixelShader("lightBlendPS.cso");
 }
 
 void Renderer::OnKeyUp(WPARAM inKeyCode)
