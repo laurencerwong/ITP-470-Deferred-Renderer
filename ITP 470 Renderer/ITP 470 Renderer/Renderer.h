@@ -39,7 +39,8 @@ typedef enum ViewMode
 	VIEW_MODE_FULL,
 	VIEW_MODE_DIFFUSE,
 	VIEW_MODE_NORMAL,
-	VIEW_MODE_SPECULAR
+	VIEW_MODE_SPECULAR,
+	VIEW_MODE_LIGHT_ACCUM
 } ViewMode;
 
 class Renderer : public D3DApp

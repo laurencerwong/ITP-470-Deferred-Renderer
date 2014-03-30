@@ -45,6 +45,19 @@ LightAccumulationBuffer::LightAccumulationBuffer(ID3D11Device *inDevice, unsigne
 	{
 		assert(false);
 	}
+
+	D3D11_BLEND_DESC laBlendDesc;
+	laBlendDesc.AlphaToCoverageEnable = false;
+	laBlendDesc.IndependentBlendEnable = false;
+	laBlendDesc.RenderTarget[0].BlendEnable = true;
+	laBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	laBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	laBlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	laBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	laBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	laBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	laBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;// &~D3D11_COLOR_WRITE_ENABLE_ALPHA;
+	inDevice->CreateBlendState(&laBlendDesc, &mBS);
 }
 
 LightAccumulationBuffer::~LightAccumulationBuffer()

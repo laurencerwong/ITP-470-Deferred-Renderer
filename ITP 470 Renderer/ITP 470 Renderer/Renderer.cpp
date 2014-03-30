@@ -36,10 +36,10 @@ bool Renderer::Init()
 	lightManager->CreateDirectionalLight(XMFLOAT4(1.0f, 0.78f, 0.5f, 1.0f), XMFLOAT3(5.0f, -5.0f, 0.0f));
 
 
-	/*lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 5.0f, -5.0f), 1.0f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 5.0f, -5.0f), 1.0f, 8.0f);
 	lightManager->CreatePointLight(XMFLOAT4(0.8f, 0.0f, 0.8f, 1.0f), XMFLOAT3(15.0f, 15.0f, -5.0f), 1.0f, 8.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-5.0f, -100.0f, 0.0f), 1.0f, 36.0f);
-	*/
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-5.0f, 20.0f, 0.0f), 1.0f, 36.0f);
+	
 	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 5.0f, 0.0f), 1.0f, 36.0f);
 
 	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
@@ -146,14 +146,19 @@ void Renderer::DrawDeferred()
 
 	shaderManager->SetPixelShader("point_lightingpassPS.cso");
 	gBuffer->SetShaderResources(md3dImmediateContext);
-
-	PointLight p = lightManager->GetPointLights()[0];
-	lightManager->SetShaderConstant(md3dImmediateContext, p);
+	float blendFactor[4] = { 0.5, 0.5, 0.5, 0.5 };
+	md3dImmediateContext->OMSetBlendState(*laBuffer->GetBlendState(), blendFactor, 0xffffffff);
 	deferredRenderTarget->GetDraw()->UpdateSamplerState(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
 	shaderManager->SetVertexShader("quadVS.cso");
-	md3dImmediateContext->DrawIndexed(6, 0, 0);
+	for (PointLight p : lightManager->GetPointLights())
+	{
+		lightManager->SetShaderConstant(md3dImmediateContext, p);
+		md3dImmediateContext->DrawIndexed(6, 0, 0);
+		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+	md3dImmediateContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
 	//combine buffers
 	SetBackBufferRenderTarget();
@@ -351,6 +356,25 @@ void Renderer::DrawScene()
 		break;
 	case VIEW_MODE_DEPTH:
 		texturedQuad->GetDraw()->SetTexture(0, gBuffer->GetShaderResourceViews()[3], nullptr);
+		SetBackBufferRenderTarget();
+
+		shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
+		shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
+		texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+
+		texturedQuad->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+		texturedQuad->GetDraw()->Draw(md3dImmediateContext);
+		break;
+	case VIEW_MODE_LIGHT_ACCUM:
+		texturedQuad->GetDraw()->SetTexture(0, *laBuffer->GetShaderResourceViews(), nullptr);
+		SetBackBufferRenderTarget();
+
+		shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
+		shaderManager->SetVertexShader(texturedQuad->GetDraw()->GetVertexShader());
+		texturedQuad->GetDraw()->UpdateSamplerState(md3dImmediateContext);
+
+		texturedQuad->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
+		texturedQuad->GetDraw()->Draw(md3dImmediateContext);
 		break;
 	}
 
@@ -429,7 +453,7 @@ void Renderer::OnKeyUp(WPARAM inKeyCode)
 		break;
 	case L'v':
 	case L'V':
-		mCurrentViewMode = static_cast<ViewMode>((mCurrentViewMode + 1) % 6);
+		mCurrentViewMode = static_cast<ViewMode>((mCurrentViewMode + 1) % 7);
 		break;
 	case L'l':
 	case L'L':

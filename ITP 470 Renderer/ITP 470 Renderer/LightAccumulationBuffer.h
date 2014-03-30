@@ -9,6 +9,7 @@ public:
 	LightAccumulationBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHeight);
 	~LightAccumulationBuffer();
 	ID3D11ShaderResourceView** GetShaderResourceViews() { return &mSRV; }
+	ID3D11BlendState** GetBlendState() { return &mBS; }
 
 	void BindBuffers(ID3D11DeviceContext* inDeviceContext, ID3D11DepthStencilView *inDSV);
 	void SetShaderResources(ID3D11DeviceContext* inDeviceContext);
@@ -22,5 +23,6 @@ private:
 	ID3D11RenderTargetView* mRTV;
 	ID3D11ShaderResourceView* mSRV;
 	ID3D11Texture2D* mTex;
+	ID3D11BlendState* mBS;
 };
 
