@@ -35,12 +35,10 @@ bool Renderer::Init()
 	//init default lights
 	lightManager->CreateDirectionalLight(XMFLOAT4(1.0f, 0.78f, 0.5f, 1.0f), XMFLOAT3(5.0f, -5.0f, 0.0f));
 
-
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 5.0f, -5.0f), 1.0f, 8.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.8f, 0.0f, 0.8f, 1.0f), XMFLOAT3(15.0f, 15.0f, -5.0f), 1.0f, 8.0f);
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-5.0f, 20.0f, 0.0f), 1.0f, 36.0f);
-	
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 5.0f, 0.0f), 1.0f, 36.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 2.0f, 0.0f), 0.0f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(6.0f, 2.0f, 0.0f), 0.0f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-6.0f, 2.0f, 0.0f), 0.0f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(-12.0f, 2.0f, 0.0f), 0.0f, 8.0f);
 
 	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
 	gBuffer = new GBuffer(md3dDevice, mScreenViewport.Width, mScreenViewport.Height);
@@ -90,10 +88,7 @@ void Renderer::UpdateScene(float dt)
 		}
 	}
 	//loader->GetDrawableObject(mSkybox)->SetPosition(camera->GetPosition());
-	if (mUpdateLights)
-	{
 		lightManager->Update(dt);
-	}
 	camera->Update(dt);
 	BuildShadowTransform();
 }
@@ -144,7 +139,6 @@ void Renderer::DrawDeferred()
 	md3dImmediateContext->Unmap(perFramePSDeferredBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSDeferredBuffer);
 
-	shaderManager->SetPixelShader("point_lightingpassPS.cso");
 	gBuffer->SetShaderResources(md3dImmediateContext);
 	float blendFactor[4] = { 0.5, 0.5, 0.5, 0.5 };
 	md3dImmediateContext->OMSetBlendState(*laBuffer->GetBlendState(), blendFactor, 0xffffffff);
@@ -152,9 +146,17 @@ void Renderer::DrawDeferred()
 	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
 	shaderManager->SetVertexShader("quadVS.cso");
+	shaderManager->SetPixelShader("point_lightingpassPS.cso");
 	for (PointLight p : lightManager->GetPointLights())
 	{
 		lightManager->SetShaderConstant(md3dImmediateContext, p);
+		md3dImmediateContext->DrawIndexed(6, 0, 0);
+		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+	shaderManager->SetPixelShader("directional_lightingpassPS.cso");
+	for (DirectionalLight d : lightManager->GetDirectionalLights())
+	{
+		lightManager->SetShaderConstant(md3dImmediateContext, d);
 		md3dImmediateContext->DrawIndexed(6, 0, 0);
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
@@ -440,6 +442,7 @@ void Renderer::InitializeMiscShaders()
 	shaderManager->AddPixelShader("gbufferfill.cso");
 
 	shaderManager->AddPixelShader("point_lightingpassPS.cso");
+	shaderManager->AddPixelShader("directional_lightingpassPS.cso");
 	shaderManager->AddPixelShader("lightBlendPS.cso");
 }
 
@@ -448,6 +451,8 @@ void Renderer::OnKeyUp(WPARAM inKeyCode)
 	switch (inKeyCode)
 	{
 	case L'u':
+		mUpdateLights = !mUpdateLights;
+		break;
 	case L'U':
 		mUpdateObjects = !mUpdateObjects;
 		break;

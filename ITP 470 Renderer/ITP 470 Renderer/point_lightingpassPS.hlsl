@@ -50,17 +50,21 @@ float4 main(PixelIn input) : SV_TARGET0
 	float3 pixToLight = pointLight.mPosition - position.xyz;
 	float distToLight = length(pixToLight);
 	float lerpAmount = 0.0f;
-	float4 output = float4(0.0, 0.0, 0.0, 0.0);// = gAmbientColor * pointLight.mColor;
-	lerpAmount = BETWEEN_0_1((distToLight - pointLight.mInnerRadius) / (pointLight.mOuterRadius - pointLight.mInnerRadius));
+	float4 output = float4(0.0, 0.0, 0.0, 0.0);
 
+		//Diffuse lighting
+	lerpAmount = BETWEEN_0_1((distToLight - pointLight.mInnerRadius) / (pointLight.mOuterRadius - pointLight.mInnerRadius));
 	pixToLight /= distToLight;
 	float diffuseFactor = BETWEEN_0_1(dot(normalize(pixToLight), normal.xyz));
 	float4 outputDiffuse = float4(lerp((float3)pointLight.mColor, float3(0.0f, 0.0f, 0.0f), lerpAmount), 1.0f);
 	output += outputDiffuse * diffuseFactor * diffuse;
+
+		//Specular highlights
 	float3 reflection = reflect(-pixToLight, normal.xyz);
 	float specularMultiple = BETWEEN_0_1(dot(reflection, pixToCam));
 	float specFactor = pow(specularMultiple, specular.w);
 	float4 outputSpecular = float4(lerp(pointLight.mSpecularColor.xyz, float3(0.0f, 0.0f, 0.0f), lerpAmount), 1.0f);
 	output += outputSpecular * specFactor * float4(specular.xyz, 1.0);
+
 	return output;
 }

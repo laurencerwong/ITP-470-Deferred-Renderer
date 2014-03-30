@@ -190,5 +190,11 @@
     <FxCompile Include="lightBlendPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
+    <FxCompile Include="directional_lightingpassVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="directional_lightingpassPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

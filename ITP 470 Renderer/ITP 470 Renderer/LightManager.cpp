@@ -21,6 +21,15 @@ void LightManager::Initialize(ID3D11Device *inDevice)
 	perLightConstantBufferDesc.StructureByteStride = 0;
 
 	inDevice->CreateBuffer(&perLightConstantBufferDesc, NULL, &mPerPointLightCB);
+
+	perLightConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	perLightConstantBufferDesc.ByteWidth = sizeof(PerDirLightCBStruct);
+	perLightConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perLightConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perLightConstantBufferDesc.MiscFlags = 0;
+	perLightConstantBufferDesc.StructureByteStride = 0;
+
+	inDevice->CreateBuffer(&perLightConstantBufferDesc, NULL, &mPerDirLightCB);
 }
 
 void LightManager::SetShaderConstant(ID3D11DeviceContext* inDeviceContext, PointLight &inPointLight)
@@ -31,6 +40,15 @@ void LightManager::SetShaderConstant(ID3D11DeviceContext* inDeviceContext, Point
 	perPointLightCB->mPointlight = inPointLight;
 	inDeviceContext->Unmap(mPerPointLightCB, 0);
 	inDeviceContext->PSSetConstantBuffers(1, 1, &mPerPointLightCB);
+}
+void LightManager::SetShaderConstant(ID3D11DeviceContext* inDeviceContext, DirectionalLight &inDirLight)
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	inDeviceContext->Map(mPerDirLightCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	PerDirLightCBStruct *perDirLightCB = (PerDirLightCBStruct*)mappedResource.pData;
+	perDirLightCB->mDirlight = inDirLight;
+	inDeviceContext->Unmap(mPerDirLightCB, 0);
+	inDeviceContext->PSSetConstantBuffers(1, 1, &mPerDirLightCB);
 }
 
 void LightManager::CreateDirectionalLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition)
@@ -56,6 +74,7 @@ void LightManager::CreatePointLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inP
 	newPointLight.mPosition = inPosition;
 	newPointLight.mInnerRadius = inInnerRadius;
 	newPointLight.mOuterRadius = inOuterRadius;
+	newPointLight.mVelocity = 10.0f;
 	XMStoreFloat4(&newPointLight.mSpecularColor, XMLoadFloat4(&inColor) + XMLoadFloat4(&XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
 	mPointLights.push_back(newPointLight);
 
@@ -63,8 +82,18 @@ void LightManager::CreatePointLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inP
 
 void LightManager::Update(float dt)
 {
-	for (auto it : mPointLights)
+	for (auto &it : mPointLights)
 	{
-	//	it.Update(dt);
+		if (it.mPosition.x < -12)
+		{
+			it.mPosition.x = -12;
+			it.mVelocity *= -1.0;
+		}
+		if (it.mPosition.x > 12)
+		{
+			it.mPosition.x = 12;
+			it.mVelocity *= -1.0;
+		}
+		it.mPosition.x += it.mVelocity * dt;
 	}
 }

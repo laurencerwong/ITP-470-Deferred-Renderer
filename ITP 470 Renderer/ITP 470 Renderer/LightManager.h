@@ -20,7 +20,7 @@ typedef struct PointLight
 {
 	XMFLOAT4 mDiffuseColor, mSpecularColor;
 	XMFLOAT3 mPosition;
-	float mInnerRadius, mOuterRadius, pad0, pad1, pad2;
+	float mInnerRadius, mOuterRadius, mVelocity, pad1, pad2;
 
 } PointLight;
 
@@ -33,6 +33,7 @@ public:
 	~LightManager();
 	void Initialize(ID3D11Device *inDevice);
 	void SetShaderConstant(ID3D11DeviceContext *inDeviceContext, PointLight &inPointLight);
+	void SetShaderConstant(ID3D11DeviceContext *inDeviceContext, DirectionalLight &inDirectionalLight);
 
 	void CreateDirectionalLight	(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition);
 	void UpdateDirectionalLight	(const XMVECTOR &inPosition);
@@ -56,6 +57,11 @@ private:
 	{
 		PointLight mPointlight;
 	};
+	struct PerDirLightCBStruct
+	{
+		DirectionalLight mDirlight;
+	};
 	ID3D11Buffer* mPerPointLightCB;
+	ID3D11Buffer* mPerDirLightCB;
 };
 
