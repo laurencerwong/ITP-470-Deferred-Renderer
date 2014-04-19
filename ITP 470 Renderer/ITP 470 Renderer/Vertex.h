@@ -4,7 +4,7 @@
 using DirectX::XMFLOAT3;
 using DirectX::XMFLOAT2;
 
-typedef struct Vertex
+struct VertexF3F3F3F3F2
 {
 	XMFLOAT3 Pos;
 	XMFLOAT3 Normal;
@@ -20,9 +20,9 @@ typedef struct Vertex
 	{
 		inLHSVector = XMFLOAT2(inRHSVector.x, inRHSVector.y);
 	}
-} Vertex;
+};
 
-typedef struct VertexPosTex
+struct VertexF3F2
 {
 	XMFLOAT3 Pos;
 	XMFLOAT2 Tex0;
@@ -35,4 +35,23 @@ typedef struct VertexPosTex
 	{
 		inLHSVector = XMFLOAT2(inRHSVector.x, inRHSVector.y);
 	}
-} VertexPosTex;
+};
+struct VertexF3F3
+{
+	XMFLOAT3 Pos;
+	XMFLOAT3 Tex0;
+
+	inline void LoadAiVector3D(XMFLOAT3& inLHSVector, const aiVector3D& inRHSVector)
+	{
+		inLHSVector = XMFLOAT3(inRHSVector.x, inRHSVector.y, inRHSVector.z);
+	}
+};
+struct VertexF3
+{
+	XMFLOAT3 Pos;
+
+	inline void LoadAiVector3D(XMFLOAT3& inLHSVector, const aiVector3D& inRHSVector)
+	{
+		inLHSVector = XMFLOAT3(inRHSVector.x, inRHSVector.y, inRHSVector.z);
+	}
+};

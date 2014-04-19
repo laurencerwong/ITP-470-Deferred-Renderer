@@ -1,6 +1,6 @@
 Texture2D gDiffuseTex	: register(t0);
 Texture2D gNormalTex	: register(t1);
-Texture2D gShadowMap		: register(t2);
+Texture2D gShadowMap	: register(t2);
 
 SamplerState linearTextureSampler
 {
@@ -25,7 +25,12 @@ struct Material
 	float4 mAmbient;
 	float4 mDiffuse;
 	float4 mSpecular;
-}; 
+};
+
+cbuffer cbPerFrame : register(b0)
+{
+	float4 gFarPlane;
+}
 
 cbuffer cbPerObject : register(b1)
 {
@@ -38,6 +43,7 @@ struct PS_OUT
 	float4 normal	: SV_TARGET1;
 	float4 specular	: SV_TARGET2;
 	float4 position : SV_TARGET3;
+	float depth : SV_TARGET4;
 };
 
 struct PS_IN
@@ -48,7 +54,8 @@ struct PS_IN
 	float3 tangent	: TANGENT;
 	float3 binormal	: BINORMAL;
 	float2 tex	: TEXCOORD0; 
-	float4 shadowTexCoord : TEXCOORD1;
+	float  depthWorldView : TEXCOORD1;
+	float4 shadowTexCoord : TEXCOORD2;
 };
 
 PS_OUT main(PS_IN input) 
@@ -66,6 +73,8 @@ PS_OUT main(PS_IN input)
 
 	output.specular = gMaterial.mSpecular;
 	output.position = float4(input.posWorld, 1.0f);
+
+	output.depth = input.depthWorldView / gFarPlane.x;
 
 	float depth = input.shadowTexCoord.z - 0.001;
 	float shadowFactor = gShadowMap.SampleCmpLevelZero(ShadowMapSampler, input.shadowTexCoord.xy, depth).r;

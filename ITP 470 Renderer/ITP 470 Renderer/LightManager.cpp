@@ -1,4 +1,6 @@
 #include "LightManager.h"
+#include "SceneLoader.h"
+#include <random>
 
 LightManager::LightManager()
 {
@@ -31,7 +33,11 @@ void LightManager::Initialize(ID3D11Device *inDevice)
 
 	inDevice->CreateBuffer(&perLightConstantBufferDesc, NULL, &mPerDirLightCB);
 
-	mDirLightDesiredDirLerp = 2.0f;
+}
+
+void LightManager::LoadLightVolumeMesh()
+{
+
 }
 
 void LightManager::SetShaderConstant(ID3D11DeviceContext* inDeviceContext, PointLight &inPointLight)
@@ -55,25 +61,30 @@ void LightManager::SetShaderConstant(ID3D11DeviceContext* inDeviceContext, Direc
 
 void LightManager::CreateDirectionalLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition)
 {
-	
+	DirectionalLightContainer newDirectionalLightContainer;
+	XMStoreFloat3(&newDirectionalLightContainer.mDirLightDesiredDir, XMVector3Normalize(XMLoadFloat3(&inPosition)));
+	XMStoreFloat3(&newDirectionalLightContainer.mDirLightPreviousDir, XMVector3Normalize(XMLoadFloat3(&inPosition)));
+	newDirectionalLightContainer.mDirLightDesiredDirLerp = 0.0f;
+
 	DirectionalLight newDirectionalLight;
-	newDirectionalLight.mColor = inColor;
 	XMStoreFloat3(&newDirectionalLight.mDirection, XMVector3Normalize(XMLoadFloat3(&inPosition)));
-	XMStoreFloat3(&mDirLightDesiredDir, XMVector3Normalize(XMLoadFloat3(&inPosition)));
 	XMStoreFloat4(&newDirectionalLight.mSpecularColor,  XMLoadFloat4(&inColor) + XMLoadFloat4(&XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
-	mDirectionalLights.push_back(newDirectionalLight);
-	
+	newDirectionalLight.mColor = inColor;
+	newDirectionalLightContainer.mDirectionalLight = newDirectionalLight;
+
+	mDirectionalLights.push_back(newDirectionalLightContainer);
 }
 
 void LightManager::UpdateDirectionalLight(const XMVECTOR &inPosition)
 {
-	mDirLightPreviousDir = mDirectionalLights[0].mDirection;
-	XMStoreFloat3(&mDirLightDesiredDir, XMVector3Normalize(inPosition));
-	mDirLightDesiredDirLerp = 0.0f;
+	mDirectionalLights[0].mDirLightPreviousDir = mDirectionalLights[0].mDirectionalLight.mDirection;
+	XMStoreFloat3(&mDirectionalLights[0].mDirLightDesiredDir, XMVector3Normalize(inPosition));
+	mDirectionalLights[0].mDirLightDesiredDirLerp = 0.0f;
 }
 
-void LightManager::CreatePointLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius)
+void LightManager::CreatePointLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius, bool inShadowEnabled)
 {
+	PointLightContainer newPointLightContainer;
 	PointLight newPointLight;
 	newPointLight.mDiffuseColor = inColor;
 	newPointLight.mPosition = inPosition;
@@ -81,33 +92,49 @@ void LightManager::CreatePointLight(const XMFLOAT4 &inColor, const XMFLOAT3 &inP
 	newPointLight.mOuterRadius = inOuterRadius;
 	newPointLight.mVelocity = 10.0f;
 	XMStoreFloat4(&newPointLight.mSpecularColor, XMLoadFloat4(&inColor) + XMLoadFloat4(&XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
-	mPointLights.push_back(newPointLight);
+	newPointLightContainer.mPointLight = newPointLight;
+	newPointLightContainer.mLightVolume = &mPointLightVolumeMesh;
+	newPointLightContainer.mShadowEnabled = inShadowEnabled;
+	mPointLights.push_back(newPointLightContainer);
 
+}
+
+void LightManager::CreateRandomPointLight(const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius, bool inShadowEnabled)
+{
+	float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	XMFLOAT4 randomColor = { r, g, b, 1.0f };
+	XMStoreFloat4(&randomColor, XMVectorSaturate(XMLoadFloat4(&randomColor)));
+	CreatePointLight(randomColor, inPosition, inInnerRadius, inOuterRadius, inShadowEnabled);
 }
 
 void LightManager::Update(float dt)
 {
 	for (auto &it : mPointLights)
 	{
-		if (it.mPosition.x < -12)
+		if (it.mPointLight.mPosition.x < -12)
 		{
-			it.mPosition.x = -12;
-			it.mVelocity *= -1.0;
+			it.mPointLight.mPosition.x = -12;
+			it.mPointLight.mVelocity *= -1.0;
 		}
-		if (it.mPosition.x > 12)
+		if (it.mPointLight.mPosition.x > 12)
 		{
-			it.mPosition.x = 12;
-			it.mVelocity *= -1.0;
+			it.mPointLight.mPosition.x = 12;
+			it.mPointLight.mVelocity *= -1.0;
 		}
-		it.mPosition.x += it.mVelocity * dt;
+		it.mPointLight.mPosition.x += it.mPointLight.mVelocity * dt;
 	}
-	mDirLightDesiredDirLerp += dt;
-	XMVECTOR prevDirLightDir = XMLoadFloat3(&mDirLightPreviousDir);
-	XMVECTOR desDirLightDir = XMLoadFloat3(&mDirLightDesiredDir);
-	XMStoreFloat3(&mDirectionalLights[0].mDirection, XMVectorLerp(prevDirLightDir, desDirLightDir, mDirLightDesiredDirLerp / 4.0f ));
-	if (mDirLightDesiredDirLerp > 4.0f)
+	for (auto &it : mDirectionalLights)
 	{
-		mDirLightDesiredDir.x *= -1;
-		UpdateDirectionalLight(XMLoadFloat3(&mDirLightDesiredDir));
+		it.mDirLightDesiredDirLerp += dt;
+		XMVECTOR prevDirLightDir = XMLoadFloat3(&it.mDirLightPreviousDir);
+		XMVECTOR desDirLightDir = XMLoadFloat3(&it.mDirLightDesiredDir);
+		XMStoreFloat3(&it.mDirectionalLight.mDirection, XMVectorLerp(prevDirLightDir, desDirLightDir, it.mDirLightDesiredDirLerp / 4.0f));
+		if (it.mDirLightDesiredDirLerp > 4.0f)
+		{
+			it.mDirLightDesiredDir.x *= -1;
+			UpdateDirectionalLight(XMLoadFloat3(&it.mDirLightDesiredDir));
+		}
 	}
 }

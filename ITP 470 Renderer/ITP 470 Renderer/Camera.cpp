@@ -19,7 +19,7 @@ void Camera::Update(float dt)
 void Camera::DoFirstPersonRotation(float dt)
 {
 	XMMATRIX transformMatrix;
-	XMVECTOR forwardVec, leftVec, rotation;
+	XMVECTOR rotation;
 
 	//scale down m
 	float deltaX = mMouseCoordinates.x / 1000.0f;

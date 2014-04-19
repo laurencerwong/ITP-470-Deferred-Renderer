@@ -7,6 +7,7 @@
 #include "ShaderManager.h"
 #include "BoundingSphere.h"
 #include "Vertex.h"
+#include "MeshData.h"
 
 using namespace DirectX;
 
@@ -23,8 +24,9 @@ public:
 	std::vector<DrawableObject*> &GetDrawableObjects() { return mDrawableObjects; }
 	DrawableObject* GetDrawableObject(int inDrawableObjectID) { return mDrawableObjects[inDrawableObjectID]; }
 	BoundingSphere GetBoundingSphere() { return mSceneBoundingSphere; }
+	int LoadModel(const char* filename, MeshData& outMesh);
 private:
-	bool ProcessMesh(ID3D11Device *ind3dDevice, aiMesh &inMesh , DrawableObject &inObject, std::vector<Vertex> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex);
+	bool ProcessMesh(ID3D11Device *ind3dDevice, aiMesh &inMesh , DrawableObject &inObject, std::vector<VertexF3F3F3F3F2> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex);
 
 	BoundingSphere mSceneBoundingSphere;
 	ID3D11Device *d3dDevice;

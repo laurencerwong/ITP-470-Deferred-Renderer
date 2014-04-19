@@ -2,6 +2,7 @@ cbuffer cbPerFrame : register(cb0)
 {
 	float4x4 gProj;
 	float4x4 gView;
+	float3 gFarFrustrumCorners[4];
 };
 
 cbuffer cbPerObject : register(cb1)

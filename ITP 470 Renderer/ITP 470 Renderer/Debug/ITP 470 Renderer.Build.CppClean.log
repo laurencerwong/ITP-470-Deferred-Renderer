@@ -1,42 +1,49 @@
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\vc120.pdb
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\vc120.idb
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\camera.nativecodeanalysis.xml
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\camera.obj
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\cubemap.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\ddstextureloader.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\filereaderwriter.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\d3dapp.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\d3dutil.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\gametimer.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\mathhelper.obj
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\gbuffer.obj
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\inputmanager.obj
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\lightaccumulationbuffer.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\lightmanager.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\main.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\drawableobject.obj
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\meshdata.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\renderer.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\sceneloader.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\shadermanager.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\shadowmap.obj
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\texturedquad.obj
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\meshdata.obj
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\inputmanager.obj
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\gbuffer.obj
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\depthps.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\depthvs.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\directional_lightingpassps.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\directional_lightingpassvs.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\colorps.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\colorvs.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongvs.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quadps.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\depthps.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quadvs.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongps.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quaddepthps.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\depthvs.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongpsshadowmap.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongvsshadowmap.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\lightingpassvs.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\gbufferfill.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\point_lightingpassvs.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\lightblendps.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\lineardepthvs.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\point_lightingpassps.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\point_lightingpassvs.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongps.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongpsshadowmap.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongvs.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\phongvsshadowmap.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quaddepthps.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quadps.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quadvs.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\omnidirshadowvs.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\omnidirshadowps.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\itp 470 renderer.ilk
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\itp 470 renderer.exe
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\itp 470 renderer.pdb
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.res
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\cl.command.1.tlog
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\cl.read.1.tlog
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\cl.write.1.tlog
@@ -47,3 +54,6 @@ c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\deb
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\link.command.1.tlog
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\link.read.1.tlog
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\link.write.1.tlog
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\rc.command.1.tlog
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\rc.read.1.tlog
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\debug\itp 470 renderer.tlog\rc.write.1.tlog

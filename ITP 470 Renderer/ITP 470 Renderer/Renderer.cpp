@@ -32,17 +32,29 @@ bool Renderer::Init()
 	//loader->LoadFile("temp2.obj");
 	DeclareShaderConstants(md3dDevice);
 
+	MeshData lightVolume;
+	int numIndices = loader->LoadModel("lightvolume.obj", lightVolume);
+	lightManager->SetLightVolumeMesh(lightVolume, numIndices);
 	//init default lights
 	lightManager->CreateDirectionalLight(XMFLOAT4(1.0f, 0.78f, 0.5f, 1.0f), XMFLOAT3(5.0f, -5.0f, 0.0f));
 
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 0.0f, 0.9f, 1.0f), XMFLOAT3(0.0f, 2.0f, 0.0f), 0.0f, 8.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), XMFLOAT3(6.0f, 2.0f, 0.0f), 0.0f, 8.0f);
-	lightManager->CreatePointLight(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(-6.0f, 2.0f, 0.0f), 0.0f, 8.0f);
-	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(-12.0f, 2.0f, 0.0f), 0.0f, 8.0f);
+	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(-6.0f, 7.0f, 0.0f), 0.01f, 8.0f, true);
+	lightManager->CreateRandomPointLight(XMFLOAT3(-6.0f, 2.0f, 6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(0.0f, 2.0f, 6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(6.0f, 2.0f, 6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(12.0f, 2.0f, 6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(-12.0f, 2.0f, -6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(-6.0f, 2.0f, -6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(0.0f, 2.0f, -6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(6.0f, 2.0f, -6.0f), 1.0f, 3.0f, false);
+	lightManager->CreateRandomPointLight(XMFLOAT3(12.0f, 2.0f, -6.0f), 1.0f, 3.0f, false);
+	
+	
 
 	shadowMap = new ShadowMap(md3dDevice, 2048, 2048);
-	gBuffer = new GBuffer(md3dDevice, mScreenViewport.Width, mScreenViewport.Height);
-	laBuffer = new LightAccumulationBuffer(md3dDevice, mScreenViewport.Width, mScreenViewport.Height);
+	gBuffer = new GBuffer(md3dDevice, static_cast<unsigned int>(mScreenViewport.Width), static_cast<unsigned int>(mScreenViewport.Height));
+	cubeShadowMap = new CubeMap(md3dDevice, static_cast<unsigned int>(1024), static_cast<unsigned int>(1024));
+	laBuffer = new LightAccumulationBuffer(md3dDevice, static_cast<unsigned int>(mScreenViewport.Width), static_cast<unsigned int>(mScreenViewport.Height));
 	texturedQuad = new TexturedQuad(shaderManager);
 	texturedQuad->Initialize(md3dDevice);
 	deferredRenderTarget = new TexturedQuad(shaderManager);
@@ -64,7 +76,41 @@ bool Renderer::Init()
 	newRasterizerDesc.AntialiasedLineEnable = false;
 
 	md3dDevice->CreateRasterizerState(&newRasterizerDesc, &mNoShadowAcneState);
-	
+	// Setup a raster description which turns off back face culling.
+	newRasterizerDesc.AntialiasedLineEnable = false;
+	newRasterizerDesc.CullMode = D3D11_CULL_NONE;
+	newRasterizerDesc.DepthBias = 0;
+	newRasterizerDesc.DepthBiasClamp = 0.0f;
+	newRasterizerDesc.DepthClipEnable = true;
+	newRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	newRasterizerDesc.FrontCounterClockwise = false;
+	newRasterizerDesc.MultisampleEnable = false;
+	newRasterizerDesc.ScissorEnable = false;
+	newRasterizerDesc.SlopeScaledDepthBias = 0.0f;
+
+	// Create the no culling rasterizer state.
+	md3dDevice->CreateRasterizerState(&newRasterizerDesc, &mNoCulling);
+
+	D3D11_DEPTH_STENCIL_DESC newDepthStencilDesc;
+	newDepthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
+	newDepthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
+	newDepthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
+	newDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	newDepthStencilDesc.StencilWriteMask = 0xFF;
+	newDepthStencilDesc.StencilReadMask = 0xFF;
+	newDepthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	newDepthStencilDesc.StencilEnable = true;
+	newDepthStencilDesc.DepthEnable = true;
+	HRESULT result = md3dDevice->CreateDepthStencilState(&newDepthStencilDesc, &mAlwaysLessDepthStencilState);
+	if (FAILED(result))
+	{
+		assert(false);
+	}
 
 	return true;
 }
@@ -88,9 +134,12 @@ void Renderer::UpdateScene(float dt)
 		}
 	}
 	//loader->GetDrawableObject(mSkybox)->SetPosition(camera->GetPosition());
+	if (mUpdateLights)
+	{
 		lightManager->Update(dt);
+
+	}
 	camera->Update(dt);
-	BuildShadowTransform();
 }
 
 void Renderer::OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &mouse)
@@ -102,11 +151,29 @@ void Renderer::OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &mouse)
 	}
 }
 
+void Renderer::DrawOmniDepth(int inIndex)
+{
+	XMVECTOR colors[] = { XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f),
+		XMVectorSet(1.0f, 1.0f, 0.0f, 1.0f), XMVectorSet(0.0f, 1.0f, 1.0f, 1.0f), XMVectorSet(1.0f, 0.0f, 1.0f, 1.0f) };
+	shaderManager->SetVertexShader("omniDirShadowVS.cso");
+	shaderManager->SetPixelShader("omniDirShadowPS.cso");
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	md3dImmediateContext->Map(perFramePSPointBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFramePointLightShadowPSStruct*cbDeferred = (perFramePointLightShadowPSStruct*)mappedResource.pData;
+	cbDeferred->gPointLight = lightManager->GetPointLights()[0].mPointLight;
+	cbDeferred->gColor = colors[inIndex];
+	md3dImmediateContext->Unmap(perFramePSPointBuffer, 0);
+	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSPointBuffer);
+	for (DrawableObject* object : loader->GetDrawableObjects())
+	{
+		object->UpdateVSConstantBuffer(md3dImmediateContext);
+		object->DrawWithoutTextures(md3dImmediateContext);
+	}
+}
+
 void Renderer::DrawDepth()
 {
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-
-	//shaderManager->SetPixelShader("depthPS.cso");
 	shaderManager->SetVertexShader("depthVS.cso");
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
@@ -117,6 +184,12 @@ void Renderer::DrawDepth()
 
 void Renderer::FillGBuffer()
 {
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	md3dImmediateContext->Map(perFramePSDeferredFillBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	perFrameDeferredFillStruct*cbDeferred = (perFrameDeferredFillStruct*)mappedResource.pData;
+	cbDeferred->gFarPlane = XMLoadFloat4(&XMFLOAT4(1000.0f, 1.0f, 1.0f, 1.0f));
+	md3dImmediateContext->Unmap(perFramePSDeferredFillBuffer, 0);
+	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSDeferredFillBuffer);
 	ID3D11ShaderResourceView* psShaderResourceViews = { shadowMap->GetDepthMapResourceView() };
 	md3dImmediateContext->PSSetShaderResources(2, 1, &psShaderResourceViews);
 	for (DrawableObject* object : loader->GetDrawableObjects())
@@ -133,6 +206,7 @@ void Renderer::FillGBuffer()
 void Renderer::DrawDeferred()
 {
 	//Lighting to light accumulation buffer
+	//Steps - 1.Stencil buffer 2. Lighting
 	laBuffer->BindBuffers(md3dImmediateContext, mDepthStencilView);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	md3dImmediateContext->Map(perFramePSDeferredBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -142,7 +216,6 @@ void Renderer::DrawDeferred()
 	cbDeferred->gCamPos = XMLoadFloat3(&camera->GetPosition());
 	md3dImmediateContext->Unmap(perFramePSDeferredBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSDeferredBuffer);
-
 	gBuffer->SetShaderResources(md3dImmediateContext);
 	float blendFactor[4] = { 0.5, 0.5, 0.5, 0.5 };
 	md3dImmediateContext->OMSetBlendState(*laBuffer->GetBlendState(), blendFactor, 0xffffffff);
@@ -150,20 +223,51 @@ void Renderer::DrawDeferred()
 	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
 	shaderManager->SetVertexShader("quadVS.cso");
+	//shaderManager->SetVertexShader("point_lightingpassVS.cso");
 	shaderManager->SetPixelShader("point_lightingpassPS.cso");
-	for (PointLight p : lightManager->GetPointLights())
+	md3dImmediateContext->RSSetState(mNoShadowAcneState);
+	md3dImmediateContext->PSSetSamplers(0, 1, gBuffer->GetSamplerState());
+	md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	md3dImmediateContext->PSSetShaderResources(5, 1, cubeShadowMap->GetCubeShaderResourceView());
+	md3dImmediateContext->PSSetSamplers(1, 1, cubeShadowMap->GetComparisonSamplerState());
+	for (PointLightContainer pc : lightManager->GetPointLights())
 	{
-		lightManager->SetShaderConstant(md3dImmediateContext, p);
+/*		PointLight pl = pc.mPointLight;
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		md3dImmediateContext->Map(perFramePSDeferredBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+		perFrameDeferredPSStruct *cbDeferred = (perFrameDeferredPSStruct*)mappedResource.pData;
+		cbDeferred->gShadowTransform = XMMatrixScaling(pl.mOuterRadius, pl.mOuterRadius, pl.mOuterRadius) * XMMatrixIdentity() * XMMatrixTranslationFromVector(XMLoadFloat3(&pl.mPosition));
+		md3dImmediateContext->Unmap(perFramePSDeferredBuffer, 0);
+		md3dImmediateContext->VSSetConstantBuffers(1, 1, &perFramePSDeferredBuffer);
+		
+		lightManager->GetLightVolumeMesh()->SetVertexAndIndexBuffers(md3dImmediateContext);
+		*/
+		if (pc.mShadowEnabled)
+		{
+			shaderManager->SetPixelShader("point_lightingpassShadowPS.cso");
+		}
+		else
+		{
+			shaderManager->SetPixelShader("point_lightingpassPS.cso");
+		}
+		lightManager->SetShaderConstant(md3dImmediateContext, pc.mPointLight);
 		md3dImmediateContext->DrawIndexed(6, 0, 0);
+		//md3dImmediateContext->DrawIndexed(lightManager->GetLightVolumeIndexCount(), 0, 0);
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
+	md3dImmediateContext->RSSetState(0);
+//	shaderManager->SetVertexShader("quadVS.cso");
+	
 	shaderManager->SetPixelShader("directional_lightingpassPS.cso");
-	for (DirectionalLight d : lightManager->GetDirectionalLights())
+	for (DirectionalLightContainer d : lightManager->GetDirectionalLights())
 	{
-		lightManager->SetShaderConstant(md3dImmediateContext, d);
+		lightManager->SetShaderConstant(md3dImmediateContext, d.mDirectionalLight);
 		md3dImmediateContext->DrawIndexed(6, 0, 0);
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
+	
+	//md3dImmediateContext->OMSetDepthStencilState(mDefaultDepthStencilState, *mDefaultDepthStencilStateRef);
+	//md3dImmediateContext->OMSetDepthStencilState(nullptr, 0);
 	md3dImmediateContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
 	//combine buffers
@@ -190,11 +294,11 @@ void Renderer::DrawPhong()
 	md3dImmediateContext->RSSetState(mNoShadowAcneState);
 	md3dImmediateContext->Map(perFramePSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBPSStruct *constantPSStruct = (perFrameCBPSStruct*)mappedResource.pData;
-	constantPSStruct->gDirLight = lightManager->GetDirectionalLights()[0];
-	constantPSStruct->gPointLight[0] = lightManager->GetPointLights()[0];
-	constantPSStruct->gPointLight[1] = lightManager->GetPointLights()[1];
-	constantPSStruct->gPointLight[2] = lightManager->GetPointLights()[2];
-	constantPSStruct->gPointLight[3] = lightManager->GetPointLights()[3];
+	constantPSStruct->gDirLight = lightManager->GetDirectionalLights()[0].mDirectionalLight;
+	constantPSStruct->gPointLight[0] = lightManager->GetPointLights()[0].mPointLight;
+	constantPSStruct->gPointLight[1] = lightManager->GetPointLights()[1].mPointLight;
+	constantPSStruct->gPointLight[2] = lightManager->GetPointLights()[2].mPointLight;
+	constantPSStruct->gPointLight[3] = lightManager->GetPointLights()[3].mPointLight;
 	constantPSStruct->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
 	constantPSStruct->gCamPos = XMLoadFloat3(&camera->GetPosition());
 
@@ -217,11 +321,18 @@ void Renderer::DrawPhong()
 
 void Renderer::UpdatePerFrameVSCB()
 {
+	XMVECTOR frustrumCenter = XMLoadFloat3(&camera->GetPosition()) + (camera->GetForward() * 1000.0f);
+	float screenHeight = mScreenViewport.Height;
+	float screenWidth = mScreenViewport.Width;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	md3dImmediateContext->Map(perFrameVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCBStruct *constantVSMatrix = (perFrameCBStruct*)mappedResource.pData;
 	constantVSMatrix->mProj = XMLoadFloat4x4(&mProj);
 	constantVSMatrix->mView = XMLoadFloat4x4(&mView);
+	constantVSMatrix->gFarFrustrumCorners[0] = frustrumCenter + XMVectorSet(-screenWidth / 2.0f, screenHeight / 2.0f, 0.0f, 0.0f);
+	constantVSMatrix->gFarFrustrumCorners[1] = frustrumCenter + XMVectorSet(screenWidth / 2.0f, screenHeight / 2.0f, 0.0f, 0.0f);
+	constantVSMatrix->gFarFrustrumCorners[2] = frustrumCenter + XMVectorSet(-screenWidth / 2.0f, -screenHeight / 2.0f, 0.0f, 0.0f);
+	constantVSMatrix->gFarFrustrumCorners[3] = frustrumCenter + XMVectorSet(screenWidth / 2.0f, -screenHeight / 2.0f, 0.0f, 0.0f);
 	md3dImmediateContext->Unmap(perFrameVSConstantBuffer, 0);
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
 }
@@ -237,25 +348,74 @@ void Renderer::UpdatePerFrameVSCBShadowMap()
 	md3dImmediateContext->VSSetConstantBuffers(0, 1, &perFrameVSConstantBuffer);
 }
 
+
 void Renderer::DrawSceneToShadowMap(ShadowMap *inShadowMap)
 {
+	cubeShadowMap->ClearBuffers(md3dImmediateContext);
+	for (int i = 0; i < 6; ++i)
+	{
+		cubeShadowMap->BindBuffersAndSetDepthView(md3dImmediateContext, mDepthStencilView, i);
+		//cubeShadowMap->BindBuffersAndSetNullRenderTarget(md3dImmediateContext, i);
+		BuildShadowTransform(lightManager->GetPointLights()[0].mPointLight, i);
+		UpdatePerFrameVSCBShadowMap();
+		//DrawDepth();
+		DrawOmniDepth(i);
+	}
+	
 	inShadowMap->BindDepthStencilViewAndSetNullRenderTarget(md3dImmediateContext);
-	BuildShadowTransform();
+	BuildShadowTransform(lightManager->GetDirectionalLights()[0].mDirectionalLight);
 	UpdatePerFrameVSCBShadowMap();
 	DrawDepth();
 
 	md3dImmediateContext->RSSetState(0);
 	md3dImmediateContext->RSSetViewports(1, &mScreenViewport);
 	XMStoreFloat4x4(&mView, camera->GetViewMatrix());
-	XMStoreFloat4x4(&mProj, XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 0.1f, 1000.0f));
+	XMStoreFloat4x4(&mProj, XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 0.01f, 1000.0f));
 }
 
+void Renderer::DrawDepthForPoint(PointLight &inLight)
+{
+	//Use point light shadow shader to draw in the distance of the pixel from the point light
+}
 
-void Renderer::BuildShadowTransform()
+void Renderer::BuildShadowTransform(const PointLight &inPointLight, int inFaceNum)
+{
+	XMFLOAT3 LIGHT_DIRS[] = { XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f),
+		XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f),
+	XMFLOAT3(0.0f, 0.0f, -1.0f)};
+	XMFLOAT3 LIGHT_UP[] = { XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f),
+		XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f),
+		XMFLOAT3(0.0f, 1.0f, 0.0f) };
+
+	XMVECTOR lightDir = XMLoadFloat3(&LIGHT_DIRS[inFaceNum]);
+	XMVECTOR lightPos = XMLoadFloat3(&inPointLight.mPosition);
+	XMVECTOR targetPos = lightPos + lightDir;
+	XMVECTOR up = XMLoadFloat3(&LIGHT_UP[inFaceNum]);
+
+	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, up);
+	XMStoreFloat4x4(&mLightView, lightView);
+
+	//Aspect ratio is 1.0f since the texture is always square
+	XMMATRIX lightProj = XMMatrixPerspectiveFovLH(MathHelper::Pi/2.0f, 1.0f, 0.1f, inPointLight.mOuterRadius);
+	XMStoreFloat4x4(&mLightProj, lightProj);
+
+
+	/*
+	XMMATRIX transNDCtoTex(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.0f, 1.0f);
+
+	XMStoreFloat4x4(&mShadowTransform, lightView * lightProj * transNDCtoTex);
+	*/
+}
+
+void Renderer::BuildShadowTransform(const DirectionalLight &inDirectionalLight)
 {
 	BoundingSphere sceneBoundingSphere = loader->GetBoundingSphere();
 
-	XMVECTOR lightDir = XMLoadFloat3(&lightManager->GetDirectionalLights()[0].mDirection);
+	XMVECTOR lightDir = XMLoadFloat3(&inDirectionalLight.mDirection);
 	XMVECTOR lightPos = -2.0f * sceneBoundingSphere.mRadius * lightDir;
 	XMVECTOR targetPos = XMLoadFloat3(&sceneBoundingSphere.mCenter);
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -297,13 +457,15 @@ void Renderer::DrawScene()
 	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	DrawSceneToShadowMap(shadowMap);
-	gBuffer->BindBuffers(md3dImmediateContext);
+	gBuffer->BindBuffers(md3dImmediateContext, mDepthStencilView);
 	shaderManager->SetPixelShader("gbufferfill.cso");
 	shaderManager->SetVertexShader("phongVSShadowMap.cso");
 
 	//HHHHHAAAACKTACULAR
 	XMStoreFloat4x4(&mView, camera->GetViewMatrix());
 	XMStoreFloat4x4(&mProj, XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 0.1f, 1000.0f));
+	shaderManager->SetPixelShader("gbufferfill.cso");
+	shaderManager->SetVertexShader("phongVSShadowMap.cso");
 	UpdatePerFrameVSCB();
 	FillGBuffer();
 
@@ -311,13 +473,9 @@ void Renderer::DrawScene()
 	{
 	case VIEW_MODE_FULL:
 		DrawDeferred();
-		//texturedQuad->GetDraw()->SetTexture(0, deferredRenderTarget->GetShaderResourceView(), nullptr);
-		//texturedQuad->GetDraw()->SetPixelShader("quadPS.cso");
-		//DrawPhong();
 		break;
 	case VIEW_MODE_SHADOW_DEPTH:
-		//texturedQuad->GetDraw()->SetPixelShader("quadDepthPS.cso");
-		texturedQuad->GetDraw()->SetTexture(0, shadowMap->GetDepthMapResourceView(), nullptr);
+		texturedQuad->GetDraw()->SetTexture(0, cubeShadowMap->GetShaderResourceViews()[mCurrentCubeMap], nullptr);
 		SetBackBufferRenderTarget();
 
 		shaderManager->SetPixelShader(texturedQuad->GetDraw()->GetPixelShader());
@@ -425,6 +583,23 @@ void Renderer::DeclareShaderConstants(ID3D11Device* d3dDevice)
 	perFrameConstantBufferDesc.StructureByteStride = 0;
 
 	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSCombinationBuffer);
+
+	perFrameConstantBufferDesc.ByteWidth = sizeof(perFrameDeferredFillStruct);
+	perFrameConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perFrameConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perFrameConstantBufferDesc.MiscFlags = 0;
+	perFrameConstantBufferDesc.StructureByteStride = 0;
+
+	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSDeferredFillBuffer);
+
+	perFrameConstantBufferDesc.ByteWidth = sizeof(perFramePointLightShadowPSStruct);
+	perFrameConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	perFrameConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	perFrameConstantBufferDesc.MiscFlags = 0;
+	perFrameConstantBufferDesc.StructureByteStride = 0;
+
+	d3dDevice->CreateBuffer(&perFrameConstantBufferDesc, NULL, &perFramePSPointBuffer);
+
 }
 
 void Renderer::SetBackBufferRenderTarget()
@@ -442,19 +617,27 @@ void Renderer::InitializeMiscShaders()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	shaderManager->AddVertexShader("depthVS.cso", depthInputLayout, 1);
+	shaderManager->AddVertexShader("omniDirShadowVS.cso", depthInputLayout, 1);
+	shaderManager->AddVertexShader("point_lightingpassVS.cso", depthInputLayout, 1);
 
 	shaderManager->AddPixelShader("gbufferfill.cso");
 
 	shaderManager->AddPixelShader("point_lightingpassPS.cso");
+	shaderManager->AddPixelShader("point_lightingpassShadowPS.cso");
 	shaderManager->AddPixelShader("directional_lightingpassPS.cso");
 	shaderManager->AddPixelShader("lightBlendPS.cso");
+	shaderManager->AddPixelShader("omniDirShadowPS.cso");
 }
 
 void Renderer::OnKeyUp(WPARAM inKeyCode)
 {
 	switch (inKeyCode)
 	{
-	case L'u':
+	case L's':
+	case L'S':
+		mCurrentCubeMap = (mCurrentCubeMap + 1) % 6;
+		break;
+	case L'1':
 		mUpdateLights = !mUpdateLights;
 		break;
 	case L'U':

@@ -16,6 +16,15 @@ typedef struct DirectionalLight
 
 } DirectionalLight;
 
+typedef struct DirectionalLightContainer
+{
+	DirectionalLight mDirectionalLight;
+
+	XMFLOAT3 mDirLightDesiredDir;
+	XMFLOAT3 mDirLightPreviousDir;
+	float mDirLightDesiredDirLerp;
+} DirectionalLightContainer;
+
 typedef struct PointLight
 {
 	XMFLOAT4 mDiffuseColor, mSpecularColor;
@@ -23,6 +32,14 @@ typedef struct PointLight
 	float mInnerRadius, mOuterRadius, mVelocity, pad1, pad2;
 
 } PointLight;
+
+typedef struct PointLightContainer
+{
+	PointLight mPointLight;
+	MeshData* mLightVolume;
+	bool mShadowEnabled;
+
+} PointLightContainer;
 
 
 class LightManager
@@ -37,25 +54,27 @@ public:
 
 	void CreateDirectionalLight	(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition);
 	void UpdateDirectionalLight	(const XMVECTOR &inPosition);
-	void CreatePointLight		(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius);
+	void CreatePointLight		(const XMFLOAT4 &inColor, const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius, bool inShadowEnabled);
+	void CreateRandomPointLight (const XMFLOAT3 &inPosition, float inInnerRadius, float inOuterRadius, bool inShadowEnabled);
 
-	const MeshData* GetLightVolumeMesh() { return &mLightVolumeMesh; }
+	void SetLightVolumeMesh(const MeshData& inMesh, int inNumIndices) { mPointLightVolumeMesh = inMesh; mPointLightVolumeMeshIndexCount = inNumIndices; }
+	const MeshData* GetLightVolumeMesh() { return &mPointLightVolumeMesh; }
+	int GetLightVolumeIndexCount() { return mPointLightVolumeMeshIndexCount; }
 
 	void Update					(float dt);
 
-	std::vector<PointLight>			const& GetPointLights()			{ return mPointLights; }
-	std::vector<DirectionalLight>	const& GetDirectionalLights()	{ return mDirectionalLights; }
+	std::vector<PointLightContainer>		const& GetPointLights()			{ return mPointLights; }
+	std::vector<DirectionalLightContainer>	const& GetDirectionalLights()	{ return mDirectionalLights; }
 
 private:
 	LightManager(const LightManager &inLightManager);
+	void LoadLightVolumeMesh();
 
-	std::vector<PointLight>			mPointLights;
-	std::vector<DirectionalLight>	mDirectionalLights;
-	MeshData mLightVolumeMesh;
+	std::vector<PointLightContainer>		mPointLights;
+	std::vector<DirectionalLightContainer>	mDirectionalLights;
+	MeshData mPointLightVolumeMesh;
+	int mPointLightVolumeMeshIndexCount;
 
-	XMFLOAT3 mDirLightDesiredDir;
-	XMFLOAT3 mDirLightPreviousDir;
-	float mDirLightDesiredDirLerp;
 
 	struct PerPointLightCBStruct
 	{

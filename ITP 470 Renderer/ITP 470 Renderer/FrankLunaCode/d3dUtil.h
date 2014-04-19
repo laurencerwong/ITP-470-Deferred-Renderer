@@ -11,9 +11,9 @@
 #endif
  
 #include <d3d11.h>
-#include <dxgi.h>
-#include <d3dcsx.h>
-#include "d3dx11Effect.h"
+//#include <dxgi.h>
+//#include <d3dcsx.h>
+//#include "d3dx11Effect.h"
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <cassert>

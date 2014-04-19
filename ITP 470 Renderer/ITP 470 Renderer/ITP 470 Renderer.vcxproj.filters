@@ -75,6 +75,12 @@
     <ClCompile Include="LightAccumulationBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CubeMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BloomBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -143,58 +149,84 @@
     <ClInclude Include="LightAccumulationBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CubeMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BloomBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Effects\colorVS.hlsl">
+    <FxCompile Include="omniDirShadowVS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
     <FxCompile Include="Effects\colorPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
-    <FxCompile Include="phongVS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="phongPS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="quadVS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="quadPS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="depthVS.hlsl">
+    <FxCompile Include="Effects\colorVS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
     <FxCompile Include="depthPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
-    <FxCompile Include="quadDepthPS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="phongPSShadowMap.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="phongVSShadowMap.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="gbufferfill.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="point_lightingpassVS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="point_lightingpassPS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="lightBlendPS.hlsl">
-      <Filter>Effect Files</Filter>
-    </FxCompile>
-    <FxCompile Include="directional_lightingpassVS.hlsl">
+    <FxCompile Include="depthVS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
     <FxCompile Include="directional_lightingpassPS.hlsl">
       <Filter>Effect Files</Filter>
     </FxCompile>
+    <FxCompile Include="directional_lightingpassVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="gbufferfill.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="lightBlendPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="linearDepthVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="omniDirShadowPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="phongPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="phongPSShadowMap.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="phongVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="phongVSShadowMap.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="point_lightingpassPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="point_lightingpassVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="quadDepthPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="quadPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="quadVS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+    <FxCompile Include="point_lightingpassShadowPS.hlsl">
+      <Filter>Effect Files</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ITP 470 Renderer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

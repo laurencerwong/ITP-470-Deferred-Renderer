@@ -27,7 +27,7 @@ std::string ShaderManager::AddPixelShader(const std::string &inShaderFilename)
 
 	if (!readSuccessful)
 	{
-
+		assert(false);
 	}
 
 	md3dDevice->CreatePixelShader(pixelShaderData->shaderByteData, pixelShaderData->size, nullptr, &mPixelShaders[inShaderFilename]);
@@ -53,7 +53,7 @@ std::string ShaderManager::AddVertexShader(const std::string &inShaderFilename, 
 
 	if (!readSuccessful)
 	{
-
+		assert(false);
 	}
 
 	md3dDevice->CreateVertexShader(vertexShaderData->shaderByteData, vertexShaderData->size, nullptr, &mVSWithLayouts[inShaderFilename].mVertexShader);
@@ -94,5 +94,12 @@ void ShaderManager::SetPixelShader(const std::string &inShaderName)
 	}
 #endif
 	mCurrentPixelShader = inShaderName;
-	md3dDeviceContext->PSSetShader(mPixelShaders[inShaderName], 0, 0);
+	if (mPixelShaders.find(inShaderName) == mPixelShaders.end())
+	{
+		md3dDeviceContext->PSSetShader(nullptr, 0, 0); //disable pixel shader
+	}
+	else
+	{
+		md3dDeviceContext->PSSetShader(mPixelShaders[inShaderName], 0, 0);
+	}
 }

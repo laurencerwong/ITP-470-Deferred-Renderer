@@ -98,7 +98,7 @@ public:
 
 	void SetTexture(int index, ID3D11ShaderResourceView* inDiffuseResourceView, ID3D11ShaderResourceView* inNormalResourceView)
 	{
-		if (index < mTextures.size())
+		if (static_cast<unsigned int>(index) < mTextures.size())
 		{
 			mTextures[index] = std::make_tuple(inDiffuseResourceView, inNormalResourceView);
 		}

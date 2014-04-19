@@ -10,7 +10,7 @@ MeshData::~MeshData()
 {
 }
 
-void MeshData::SetVertexAndIndexBuffers(ID3D11DeviceContext *ind3dDeviceContext)
+void MeshData::SetVertexAndIndexBuffers(ID3D11DeviceContext *ind3dDeviceContext) const
 {
 	UINT offset = 0;
 

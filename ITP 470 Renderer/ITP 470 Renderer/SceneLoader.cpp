@@ -172,11 +172,21 @@ void BuildShaders(ID3D11Device* d3dDevice, DrawableObject &inObject, ShaderManag
 	inObject.SetPSConstantBuffer(newPSConstantBuffer);
 }
 
-void LoadVertices(const aiMesh &inMesh, std::vector<Vertex> &convertedVertices, BoundingSphere &inBoundingSphere)
+void LoadVertices(const aiMesh &inMesh, std::vector<VertexF3> &outVertices)
 {
 	for (unsigned int i = 0; i < inMesh.mNumVertices; ++i)
 	{
-		Vertex newVertex;
+		VertexF3 newVertex;
+		newVertex.LoadAiVector3D(newVertex.Pos, inMesh.mVertices[i]);
+		outVertices.push_back(newVertex);
+	}
+}
+
+void LoadVertices(const aiMesh &inMesh, std::vector<VertexF3F3F3F3F2> &convertedVertices, BoundingSphere &inBoundingSphere)
+{
+	for (unsigned int i = 0; i < inMesh.mNumVertices; ++i)
+	{
+		VertexF3F3F3F3F2 newVertex;
 
 		float vertexLength = inMesh.mVertices[i].Length();
 		if (vertexLength > inBoundingSphere.mRadius)
@@ -217,7 +227,7 @@ void LoadIndices(const aiMesh &inMesh, std::vector<UINT> &convertedIndices)
 }
 
 
-bool SceneLoader::ProcessMesh(ID3D11Device *ind3dDevice, aiMesh &inMesh , DrawableObject &inObject, std::vector<Vertex> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex)
+bool SceneLoader::ProcessMesh(ID3D11Device *ind3dDevice, aiMesh &inMesh , DrawableObject &inObject, std::vector<VertexF3F3F3F3F2> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex)
 {
 
 	int inPrevIndexListSize = inIndexList.size();
@@ -229,6 +239,29 @@ bool SceneLoader::ProcessMesh(ID3D11Device *ind3dDevice, aiMesh &inMesh , Drawab
 	inObject.AddPart(inPrevVertexListSize, inPrevIndexListSize, inIndexList.size() - inPrevIndexListSize, inMaterialIndex);
 
 	return true;
+}
+
+int SceneLoader::LoadModel(const char* filename, MeshData& outMesh)
+{
+	std::vector<VertexF3> outVertices;
+	std::vector<UINT> outIndices;
+	Assimp::Importer importer;
+
+	const aiScene *scene = importer.ReadFile(filename, 0);
+	scene = importer.ApplyPostProcessing(aiProcess_CalcTangentSpace | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_JoinIdenticalVertices);
+	if (!scene)
+	{
+		std::stringstream oss;
+		oss << "ERROR - File: " << filename << " not found." << std::endl;
+		std::string debugMsg(oss.str());
+		OutputDebugStringA(debugMsg.c_str());
+	}
+	//always loads the first mesh
+	aiNode* currentNode = scene->mRootNode->mChildren[0];
+	LoadVertices(*scene->mMeshes[currentNode->mMeshes[0]], outVertices);
+	LoadIndices(*scene->mMeshes[currentNode->mMeshes[0]], outIndices);
+	outMesh.Initialize(d3dDevice, outVertices, outIndices);
+	return outIndices.size();
 }
 
 int SceneLoader::LoadFile(const char* filename)
@@ -246,7 +279,7 @@ int SceneLoader::LoadFile(const char* filename)
 		return false;
 	}
 	DrawableObject *newObject = new DrawableObject();
-	std::vector<Vertex> vertexList;
+	std::vector<VertexF3F3F3F3F2> vertexList;
 	std::vector<UINT> indexList;
 	std::stringstream oss;
 	for (unsigned int i = 0; i < scene->mRootNode->mNumChildren; ++i)

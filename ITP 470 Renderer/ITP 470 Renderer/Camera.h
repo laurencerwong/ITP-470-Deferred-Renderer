@@ -14,9 +14,10 @@ public:
 
 	void	Update(float dt);
 
-	const XMFLOAT3		GetPosition()		const { return mPosition; }
-	const XMFLOAT3		GetTarget()			const { return mTarget; }
-	const XMFLOAT3		GetUp()				const { return mUp; }
+	const XMFLOAT3&		GetPosition()		const { return mPosition; }
+	const XMFLOAT3&		GetTarget()			const { return mTarget; }
+	const XMVECTOR		GetForward()		const { return XMVector3Normalize(XMLoadFloat3(&mTarget)); }
+	const XMFLOAT3&		GetUp()				const { return mUp; }
 	const XMMATRIX		GetViewMatrix()		const { return XMMatrixLookAtLH(XMLoadFloat3(&mPosition), XMLoadFloat3(&mTarget), XMLoadFloat3(&mUp)); }
 
 	void	SetPosition(const XMFLOAT3& inPosition)		{ mPosition = inPosition; }

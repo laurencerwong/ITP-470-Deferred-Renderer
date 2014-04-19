@@ -52,8 +52,6 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 		assert(false);
 	}
 
-
-
 	//Create Normal Resources
 	D3D11_TEXTURE2D_DESC normalTexDesc;
 	normalTexDesc.Width = inWidth;
@@ -187,11 +185,11 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	depthTexDesc.Height = inHeight;
 	depthTexDesc.MipLevels = 1;
 	depthTexDesc.ArraySize = 1;
-	depthTexDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	depthTexDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	depthTexDesc.SampleDesc.Count = 1;
 	depthTexDesc.SampleDesc.Quality = 0;
 	depthTexDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	depthTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 	depthTexDesc.CPUAccessFlags = 0;
 	depthTexDesc.MiscFlags = 0;
 
@@ -202,7 +200,7 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC depthSRVDesc;
-	depthSRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	depthSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	depthSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	depthSRVDesc.Texture2D.MostDetailedMip = 0;
 	depthSRVDesc.Texture2D.MipLevels = 1;
@@ -212,13 +210,28 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 		assert(false);
 	}
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC depthSVDesc;
-	depthSVDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	depthSVDesc.Texture2D.MipSlice = 0;
-	depthSVDesc.Flags = 0;
+	D3D11_RENDER_TARGET_VIEW_DESC depthRTDesc;
+	depthRTDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	depthRTDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	depthRTDesc.Texture2D.MipSlice = 0;
 
-	hr = inDevice->CreateDepthStencilView(mTex[4], &depthSVDesc, &mDSV);
+	hr = inDevice->CreateRenderTargetView(mTex[4], &depthRTDesc, &mRTV[4]);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_SAMPLER_DESC ssDesc;
+	ssDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ssDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ssDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ssDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	ssDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	ssDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	ssDesc.MipLODBias = 0;
+	ssDesc.MaxAnisotropy = 16;
+
+	hr = inDevice->CreateSamplerState(&ssDesc, &mSS);
 	if (FAILED(hr))
 	{
 		assert(false);
@@ -230,15 +243,16 @@ GBuffer::~GBuffer()
 {
 }
 
-void GBuffer::BindBuffers(ID3D11DeviceContext* inDeviceContext)
+void GBuffer::BindBuffers(ID3D11DeviceContext* inDeviceContext, ID3D11DepthStencilView* inDepthStencilView)
 {
 	float clearTargetColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	inDeviceContext->OMSetRenderTargets(4, mRTV, mDSV);
-	inDeviceContext->ClearDepthStencilView(mDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	inDeviceContext->OMSetRenderTargets(5, mRTV, inDepthStencilView);
+	inDeviceContext->ClearDepthStencilView(inDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	inDeviceContext->ClearRenderTargetView(mRTV[0], clearTargetColor);
 	inDeviceContext->ClearRenderTargetView(mRTV[1], clearTargetColor);
 	inDeviceContext->ClearRenderTargetView(mRTV[2], clearTargetColor);
 	inDeviceContext->ClearRenderTargetView(mRTV[3], clearTargetColor);
+	inDeviceContext->ClearRenderTargetView(mRTV[4], clearTargetColor);
 }
 
 void GBuffer::SetShaderResources(ID3D11DeviceContext* inDeviceContext)

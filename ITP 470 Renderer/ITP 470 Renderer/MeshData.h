@@ -11,7 +11,7 @@ public:
 	template<class T>
 	void Initialize(ID3D11Device *ind3dDevice, std::vector<T> &inVertexList, std::vector<UINT> &inIndexList);
 
-	void SetVertexAndIndexBuffers(ID3D11DeviceContext *ind3dDeviceContext);
+	void SetVertexAndIndexBuffers(ID3D11DeviceContext *ind3dDeviceContext) const;
 
 	ID3D11Buffer* GetVertexBuffer() { return mVertexBuffer; }
 	ID3D11Buffer* GetIndexBuffer() { return mIndexBuffer; }

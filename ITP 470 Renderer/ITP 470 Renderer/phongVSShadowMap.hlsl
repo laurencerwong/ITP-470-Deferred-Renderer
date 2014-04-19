@@ -29,15 +29,19 @@ struct PixelIn
 	float3 tang : TANGENT;
 	float3 binorm : BINORMAL;
 	float2 tex : TEXCOORD0;
-	float4 shadowTexCoord : TEXCOORD1;
+	float  depthWorldView : TEXCOORD1;
+	float4 shadowTexCoord : TEXCOORD2;
 };
+
 
 PixelIn main(VertexIn input)
 {
 	PixelIn output;
+	float4x4 worldView = mul(gView, gWorld);
 	output.pos = mul(gWorld, float4(input.pos, 1.0));
 	output.posWorld = (float3)output.pos;
 	output.pos = mul(gView, output.pos);
+	output.depthWorldView = output.pos.z; //store world view depth for linear depth buffer
 	output.pos = mul(gProj, output.pos);
 
 	output.norm = mul((float3x3)gWorld, input.norm);

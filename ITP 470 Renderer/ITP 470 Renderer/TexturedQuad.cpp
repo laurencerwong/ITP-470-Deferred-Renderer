@@ -12,20 +12,21 @@ TexturedQuad::~TexturedQuad()
 {
 }
 
-void InitializeVerticesAndIndices(std::vector<VertexPosTex> &inVertices, std::vector<UINT> &inIndices)
+void InitializeVerticesAndIndices(std::vector<VertexF3F3> &inVertices, std::vector<UINT> &inIndices)
 {
+	//Tex0[3] represents the index into the frustrum corner
 	inVertices.resize(4);
 	inVertices[0].Pos = XMFLOAT3(-1.0f, -1.0f, 0.0f);
-	inVertices[0].Tex0 = XMFLOAT2(0.0f, 1.0f);
+	inVertices[0].Tex0 = XMFLOAT3(0.0f, 1.0f, 2.0f);
 
 	inVertices[1].Pos = XMFLOAT3(-1.0f, 1.0f, 0.0f);
-	inVertices[1].Tex0 = XMFLOAT2(0.0f, 0.0f);
+	inVertices[1].Tex0 = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	inVertices[2].Pos = XMFLOAT3(1.0f, 1.0f, 0.0f);
-	inVertices[2].Tex0 = XMFLOAT2(1.0f, 0.0f);
+	inVertices[2].Tex0 = XMFLOAT3(1.0f, 0.0f, 1.0f);
 
 	inVertices[3].Pos = XMFLOAT3(1.0f, -1.0f, 0.0f);
-	inVertices[3].Tex0 = XMFLOAT2(1.0f, 1.0f);
+	inVertices[3].Tex0 = XMFLOAT3(1.0f, 1.0f, 3.0f);
 
 	inIndices.resize(6);
 	inIndices[0] = 0;
@@ -38,7 +39,7 @@ void InitializeVerticesAndIndices(std::vector<VertexPosTex> &inVertices, std::ve
 
 void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 {
-	std::vector<VertexPosTex> vertices;
+	std::vector<VertexF3F3> vertices;
 	std::vector<UINT> indices;
 
 	InitializeVerticesAndIndices(vertices, indices);
@@ -48,7 +49,7 @@ void TexturedQuad::Initialize(ID3D11Device *ind3dDevice)
 
 	D3D11_INPUT_ELEMENT_DESC inputLayout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	mDraw->SetVertexShader(mShaderManager->AddVertexShader("quadVS.cso", inputLayout, 2));
