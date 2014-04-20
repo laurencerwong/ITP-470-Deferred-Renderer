@@ -73,7 +73,7 @@ public:
 	void DrawDeferred();
 	void DrawPhong();
 	void DrawDepth();
-	void DrawOmniDepth(int inIndex);
+	void DrawOmniDepth(int inIndex, PointLight& inPointLight);
 	void DrawDepthForPoint(PointLight &inLight);
 	void DrawDepthStencil();
 	void FillGBuffer();

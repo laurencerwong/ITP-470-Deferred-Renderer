@@ -1,6 +1,7 @@
 #pragma once
 #include <d3d11.h>
 #include <unordered_map>
+#include <stack>
 
 class ShaderManager
 {
@@ -14,6 +15,9 @@ public:
 
 	void SetPixelShader(const std::string &inShaderName);
 	void SetVertexShader(const std::string &inShaderName);
+
+	void PopPixelShader();
+	void PopVertexShader();
 
 	std::string AddVertexShader(const std::string &inShaderFilename, D3D11_INPUT_ELEMENT_DESC* inInputLayoutDesc, int inSizeOfLayoutDesc);
 	std::string AddPixelShader(const std::string &inShaderFilename);
@@ -34,5 +38,7 @@ private:
 	std::unordered_map<std::string, ID3D11PixelShader*>		mPixelShaders;
 	std::unordered_map<std::string, ID3D11VertexShader*>	mVertexShaders;
 	std::unordered_map<std::string, VSWithLayout>			mVSWithLayouts;
+	std::stack<std::string>									mPixelShaderStack;
+	std::stack<std::string>									mVertexShaderStack;
 };
 

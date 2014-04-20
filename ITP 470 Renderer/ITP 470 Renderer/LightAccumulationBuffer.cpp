@@ -64,12 +64,18 @@ LightAccumulationBuffer::~LightAccumulationBuffer()
 {
 }
 
-void LightAccumulationBuffer::BindBuffers(ID3D11DeviceContext *inDeviceContext, ID3D11DepthStencilView *inDSV)
+void LightAccumulationBuffer::BindAndClearBuffers(ID3D11DeviceContext *inDeviceContext, ID3D11DepthStencilView *inDSV)
 {
 	float clearTargetColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	inDeviceContext->OMSetRenderTargets(1, &mRTV, inDSV);
 	inDeviceContext->ClearDepthStencilView(inDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	inDeviceContext->ClearRenderTargetView(mRTV, clearTargetColor);
+}
+
+void LightAccumulationBuffer::BindBuffers(ID3D11DeviceContext *inDeviceContext, ID3D11DepthStencilView *inDSV)
+{
+	inDeviceContext->OMSetRenderTargets(1, &mRTV, inDSV);
+	inDeviceContext->ClearDepthStencilView(inDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void LightAccumulationBuffer::SetShaderResources(ID3D11DeviceContext* inDeviceContext)
