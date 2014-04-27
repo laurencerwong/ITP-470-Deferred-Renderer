@@ -78,15 +78,6 @@ float VecToDepth(float3 inVec)
 }
 float4 main(PixelIn input) : SV_TARGET0
 {
-
-	/*
-	float2 tex = texFromPosition(input.pos);
-	float4 diffuse = gDiffuseTex.Sample(linearTextureSampler, tex);
-	float4 normal = normalize(gNormalTex.Sample(linearTextureSampler, tex));
-	float4 specular = gSpecularTex.Sample(linearTextureSampler, tex);
-	float4 position = gPositionTex.Sample(linearTextureSampler, tex);
-	float4 depth = gDepthTex.Sample(linearTextureSampler, tex);
-	*/
 	
 	float4 diffuse = gDiffuseTex.Sample(linearTextureSampler, input.tex);
 	float4 normal = normalize(gNormalTex.Sample(linearTextureSampler, input.tex));

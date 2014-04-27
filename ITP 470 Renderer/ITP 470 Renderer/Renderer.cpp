@@ -39,14 +39,14 @@ bool Renderer::Init()
 	lightManager->CreateDirectionalLight(XMFLOAT4(1.0f, 0.78f, 0.5f, 1.0f), XMFLOAT3(5.0f, -5.0f, 0.0f));
 
 	lightManager->CreatePointLight(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(-6.0f, 5.0f, 0.0f), 0.01f, 18.0f, true);
-	//lightManager->CreateRandomPointLight(XMFLOAT3(-6.0f, 2.0f, 6.0f), 1.0f, 12.0f, true);
+	lightManager->CreateRandomPointLight(XMFLOAT3(-6.0f, 2.0f, 6.0f), 1.0f, 12.0f, true);
 	/*
 	lightManager->CreateRandomPointLight(XMFLOAT3(0.0f, 2.0f, 6.0f), 1.0f, 6.0f, true);
 	lightManager->CreateRandomPointLight(XMFLOAT3(6.0f, 2.0f, 6.0f), 1.0f, 6.0f, true);
 	lightManager->CreateRandomPointLight(XMFLOAT3(12.0f, 2.0f, 6.0f), 1.0f, 6.0f, true);
 	lightManager->CreateRandomPointLight(XMFLOAT3(-12.0f, 2.0f, -6.0f), 1.0f, 6.0f, true);
 	*/
-	//lightManager->CreateRandomPointLight(XMFLOAT3(-6.0f, 2.0f, -6.0f), 1.0f, 12.0f, true);
+	lightManager->CreateRandomPointLight(XMFLOAT3(-6.0f, 2.0f, -6.0f), 1.0f, 12.0f, true);
 	/*
 	lightManager->CreateRandomPointLight(XMFLOAT3(0.0f, 2.0f, -6.0f), 1.0f, 6.0f, true);
 	lightManager->CreateRandomPointLight(XMFLOAT3(6.0f, 2.0f, -6.0f), 1.0f, 6.0f, true);
@@ -65,56 +65,7 @@ bool Renderer::Init()
 	deferredRenderTarget->Initialize(md3dDevice);
 
 	InitializeMiscShaders();
-
-	//set the depth biasing to prevent shadow acne
-	D3D11_RASTERIZER_DESC newRasterizerDesc;
-	newRasterizerDesc.DepthBias = 10;
-	newRasterizerDesc.DepthBiasClamp = 0.0f;
-	newRasterizerDesc.SlopeScaledDepthBias = 1.0f;
-	newRasterizerDesc.CullMode = D3D11_CULL_BACK;
-	newRasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	newRasterizerDesc.FrontCounterClockwise = false;
-	newRasterizerDesc.DepthClipEnable = false;
-	newRasterizerDesc.ScissorEnable = false;
-	newRasterizerDesc.MultisampleEnable = false;
-	newRasterizerDesc.AntialiasedLineEnable = false;
-
-	md3dDevice->CreateRasterizerState(&newRasterizerDesc, &mNoShadowAcneState);
-	// Setup a raster description which turns off back face culling.
-	newRasterizerDesc.AntialiasedLineEnable = false;
-	newRasterizerDesc.CullMode = D3D11_CULL_NONE;
-	newRasterizerDesc.DepthBias = 0;
-	newRasterizerDesc.DepthBiasClamp = 0.0f;
-	newRasterizerDesc.DepthClipEnable = true;
-	newRasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	newRasterizerDesc.FrontCounterClockwise = false;
-	newRasterizerDesc.MultisampleEnable = false;
-	newRasterizerDesc.ScissorEnable = false;
-	newRasterizerDesc.SlopeScaledDepthBias = 0.0f;
-
-	// Create the no culling rasterizer state.
-	md3dDevice->CreateRasterizerState(&newRasterizerDesc, &mNoCulling);
-
-	D3D11_DEPTH_STENCIL_DESC newDepthStencilDesc;
-	newDepthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
-	newDepthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
-	newDepthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	newDepthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	newDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
-	newDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	newDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	newDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	newDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	newDepthStencilDesc.StencilWriteMask = 0xFF;
-	newDepthStencilDesc.StencilReadMask = 0xFF;
-	newDepthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	newDepthStencilDesc.StencilEnable = true;
-	newDepthStencilDesc.DepthEnable = true;
-	HRESULT result = md3dDevice->CreateDepthStencilState(&newDepthStencilDesc, &mAlwaysLessDepthStencilState);
-	if (FAILED(result))
-	{
-		assert(false);
-	}
+	InitializeMiscResources();
 
 	return true;
 }
@@ -251,6 +202,9 @@ void Renderer::DrawDeferred()
 		if (pc.mShadowEnabled)
 		{
 			md3dImmediateContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+			ID3D11ShaderResourceView* releaseCubeShader[1];
+			releaseCubeShader[0] = { nullptr };
+			md3dImmediateContext->PSSetShaderResources(5, 1, releaseCubeShader);
 			DrawDepthForPoint(pc.mPointLight);
 			md3dImmediateContext->OMSetBlendState(*laBuffer->GetBlendState(), blendFactor, 0xffffffff);
 			shaderManager->SetVertexShader("quadVS.cso");
@@ -270,11 +224,6 @@ void Renderer::DrawDeferred()
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 	md3dImmediateContext->RSSetState(0);
-//	shaderManager->SetVertexShader("quadVS.cso");
-	
-	
-	//md3dImmediateContext->OMSetDepthStencilState(mDefaultDepthStencilState, *mDefaultDepthStencilStateRef);
-	//md3dImmediateContext->OMSetDepthStencilState(nullptr, 0);
 	md3dImmediateContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
 	//combine buffers
@@ -288,11 +237,16 @@ void Renderer::DrawDeferred()
 	shaderManager->SetPixelShader("lightBlendPS.cso");
 	md3dImmediateContext->PSSetShaderResources(0, 1, &gBuffer->GetShaderResourceViews()[0]);
 	md3dImmediateContext->PSSetShaderResources(1, 1, laBuffer->GetShaderResourceViews());
+	//md3dImmediateContext->PSSetShaderResources(2, 1, &gBuffer->GetShaderResourceViews()[1]);
+	//md3dImmediateContext->PSSetShaderResources(3, 1, &gBuffer->GetShaderResourceViews()[3]);
+	//md3dImmediateContext->PSSetShaderResources(4, 1, &mRandomTextureSRV);
 	deferredRenderTarget->GetDraw()->UpdateSamplerState(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
 	shaderManager->SetVertexShader("quadVS.cso");
 	md3dImmediateContext->DrawIndexed(6, 0, 0);
+	ID3D11ShaderResourceView* unBindAllResources[16] = { 0 };
+	md3dImmediateContext->PSSetShaderResources(0, 16, unBindAllResources);
 }
 
 void Renderer::DrawPhong()
@@ -627,6 +581,8 @@ void Renderer::DeclareShaderConstants(ID3D11Device* d3dDevice)
 
 void Renderer::SetBackBufferRenderTarget()
 {
+	ID3D11ShaderResourceView* unBindAllResources[16] = { 0 };
+	md3dImmediateContext->PSSetShaderResources(0, 16, unBindAllResources);
 	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	return;
@@ -650,6 +606,66 @@ void Renderer::InitializeMiscShaders()
 	shaderManager->AddPixelShader("directional_lightingpassPS.cso");
 	shaderManager->AddPixelShader("lightBlendPS.cso");
 	shaderManager->AddPixelShader("omniDirShadowPS.cso");
+}
+
+void Renderer::InitializeMiscResources()
+{
+	HRESULT hr = loader->LoadTexture("random_texture.dds", mRandomTextureR, mRandomTextureSRV);
+	if (FAILED(hr))
+	{
+		//whelp... I guess that there's no random texture :/
+	}
+
+	//set the depth biasing to prevent shadow acne
+	D3D11_RASTERIZER_DESC newRasterizerDesc;
+	newRasterizerDesc.DepthBias = 10;
+	newRasterizerDesc.DepthBiasClamp = 0.0f;
+	newRasterizerDesc.SlopeScaledDepthBias = 1.0f;
+	newRasterizerDesc.CullMode = D3D11_CULL_BACK;
+	newRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	newRasterizerDesc.FrontCounterClockwise = false;
+	newRasterizerDesc.DepthClipEnable = false;
+	newRasterizerDesc.ScissorEnable = false;
+	newRasterizerDesc.MultisampleEnable = false;
+	newRasterizerDesc.AntialiasedLineEnable = false;
+
+	md3dDevice->CreateRasterizerState(&newRasterizerDesc, &mNoShadowAcneState);
+	// Setup a raster description which turns off back face culling.
+	newRasterizerDesc.AntialiasedLineEnable = false;
+	newRasterizerDesc.CullMode = D3D11_CULL_NONE;
+	newRasterizerDesc.DepthBias = 0;
+	newRasterizerDesc.DepthBiasClamp = 0.0f;
+	newRasterizerDesc.DepthClipEnable = true;
+	newRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	newRasterizerDesc.FrontCounterClockwise = false;
+	newRasterizerDesc.MultisampleEnable = false;
+	newRasterizerDesc.ScissorEnable = false;
+	newRasterizerDesc.SlopeScaledDepthBias = 0.0f;
+
+	// Create the no culling rasterizer state.
+	md3dDevice->CreateRasterizerState(&newRasterizerDesc, &mNoCulling);
+
+	D3D11_DEPTH_STENCIL_DESC newDepthStencilDesc;
+	newDepthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
+	newDepthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
+	newDepthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
+	newDepthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	newDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	newDepthStencilDesc.StencilWriteMask = 0xFF;
+	newDepthStencilDesc.StencilReadMask = 0xFF;
+	newDepthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	newDepthStencilDesc.StencilEnable = true;
+	newDepthStencilDesc.DepthEnable = true;
+	HRESULT result = md3dDevice->CreateDepthStencilState(&newDepthStencilDesc, &mAlwaysLessDepthStencilState);
+	if (FAILED(result))
+	{
+		assert(false);
+	}
+
 }
 
 void Renderer::OnKeyUp(WPARAM inKeyCode)

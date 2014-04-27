@@ -8,7 +8,8 @@ GBuffer::GBuffer(ID3D11Device *inDevice, unsigned int inWidth, unsigned int inHe
 	//0 == Diffuse
 	//1 == Normal
 	//2 == Specular
-	//3 == Depth
+	//3 == Position
+	//4 == Depth
 
 	//Create Diffuse Resources
 	D3D11_TEXTURE2D_DESC diffuseTexDesc;

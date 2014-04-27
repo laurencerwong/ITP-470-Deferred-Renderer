@@ -16,6 +16,13 @@ SceneLoader::~SceneLoader()
 {
 }
 
+HRESULT SceneLoader::LoadTexture(const char* filename, ID3D11Resource *outResource, ID3D11ShaderResourceView *outResourceView)
+{
+	wchar_t texPathW[150];
+	MultiByteToWideChar(CP_ACP, 0, filename, -1, texPathW, 150);
+	return CreateDDSTextureFromFile(d3dDevice, texPathW, &outResource, &outResourceView);
+}
+
 void LoadMaterials(ID3D11Device* d3dDevice, int inIndex, DrawableObject &inObject, const aiScene *inScene)
 {
 	aiString texPath, normTexPath;

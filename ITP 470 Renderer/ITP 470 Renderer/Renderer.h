@@ -85,6 +85,7 @@ public:
 	void UpdatePerFrameVSCB();
 	void UpdatePerFrameVSCBShadowMap();
 	void InitializeMiscShaders();
+	void InitializeMiscResources();
 	virtual void OnMouseMoveRaw(WPARAM btnState, RAWMOUSE &rawMouse) override;
 	virtual void OnKeyUp(WPARAM keyCode) override;
 	virtual void OnKeyDown(WPARAM keyCode) override;
@@ -122,6 +123,11 @@ public:
 	ID3D11RasterizerState *mNoShadowAcneState;
 	ID3D11RasterizerState *mNoCulling;
 
+
+	//Random Texture Resources
+	ID3D11ShaderResourceView *mRandomTextureSRV;
+	ID3D11Resource *mRandomTextureR;
+	ID3D11SamplerState *mRandomTextureSampler;
 
 	ShadowMap *shadowMap;
 	GBuffer *gBuffer;
