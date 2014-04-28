@@ -28,7 +28,6 @@ c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\directional_li
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\colorps.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\colorvs.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\gbufferfill.cso
-c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\lightblendps.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\lineardepthvs.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\omnidirshadowps.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\point_lightingpassps.cso
@@ -42,6 +41,7 @@ c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quaddepthps.cs
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quadps.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\quadvs.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\omnidirshadowvs.cso
+c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\lightblendps.cso
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\itp 470 renderer.ilk
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\itp 470 renderer.exe
 c:\users\laurence\documents\school\itp 470\itp 470 renderer\debug\itp 470 renderer.pdb

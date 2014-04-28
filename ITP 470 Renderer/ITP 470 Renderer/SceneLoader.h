@@ -25,7 +25,7 @@ public:
 	DrawableObject* GetDrawableObject(int inDrawableObjectID) { return mDrawableObjects[inDrawableObjectID]; }
 	BoundingSphere GetBoundingSphere() { return mSceneBoundingSphere; }
 	int LoadModel(const char* filename, MeshData& outMesh);
-	HRESULT LoadTexture(const char* filename, ID3D11Resource *outResource, ID3D11ShaderResourceView *outResourceView);
+	HRESULT LoadTexture(ID3D11Device *ind3dDevice, const char* filename, ID3D11Resource **outResource, ID3D11ShaderResourceView **outResourceView);
 private:
 	bool ProcessMesh(ID3D11Device *ind3dDevice, aiMesh &inMesh , DrawableObject &inObject, std::vector<VertexF3F3F3F3F2> &inVertexList, std::vector<UINT> &inIndexList, unsigned int inMaterialIndex);
 

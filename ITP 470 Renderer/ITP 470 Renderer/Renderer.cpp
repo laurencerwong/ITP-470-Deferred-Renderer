@@ -164,7 +164,7 @@ void Renderer::DrawDeferred()
 	md3dImmediateContext->Map(perFramePSDeferredBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameDeferredPSStruct *cbDeferred = (perFrameDeferredPSStruct*)mappedResource.pData;
 	cbDeferred->gShadowTransform = XMLoadFloat4x4(&mShadowTransform);
-	cbDeferred->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
+	cbDeferred->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f));
 	cbDeferred->gCamPos = XMLoadFloat3(&camera->GetPosition());
 	md3dImmediateContext->Unmap(perFramePSDeferredBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSDeferredBuffer);
@@ -230,16 +230,17 @@ void Renderer::DrawDeferred()
 	SetBackBufferRenderTarget();
 	md3dImmediateContext->Map(perFramePSCombinationBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameCombinationPSStruct *cbCombination = (perFrameCombinationPSStruct*)mappedResource.pData;
-	cbCombination->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f));
+	cbCombination->gAmbientColor = XMLoadFloat4(&XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f));
 	md3dImmediateContext->Unmap(perFramePSCombinationBuffer, 0);
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSCombinationBuffer);
 
 	shaderManager->SetPixelShader("lightBlendPS.cso");
 	md3dImmediateContext->PSSetShaderResources(0, 1, &gBuffer->GetShaderResourceViews()[0]);
 	md3dImmediateContext->PSSetShaderResources(1, 1, laBuffer->GetShaderResourceViews());
-	//md3dImmediateContext->PSSetShaderResources(2, 1, &gBuffer->GetShaderResourceViews()[1]);
-	//md3dImmediateContext->PSSetShaderResources(3, 1, &gBuffer->GetShaderResourceViews()[3]);
-	//md3dImmediateContext->PSSetShaderResources(4, 1, &mRandomTextureSRV);
+	md3dImmediateContext->PSSetShaderResources(2, 1, &gBuffer->GetShaderResourceViews()[1]);
+	md3dImmediateContext->PSSetShaderResources(3, 1, &gBuffer->GetShaderResourceViews()[3]);
+	md3dImmediateContext->PSSetShaderResources(4, 1, &gBuffer->GetShaderResourceViews()[4]);
+	md3dImmediateContext->PSSetShaderResources(5, 1, &mRandomTextureSRV);
 	deferredRenderTarget->GetDraw()->UpdateSamplerState(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->UpdateVSConstantBuffer(md3dImmediateContext);
 	deferredRenderTarget->GetDraw()->GetMeshData()->SetVertexAndIndexBuffers(md3dImmediateContext);
@@ -610,10 +611,11 @@ void Renderer::InitializeMiscShaders()
 
 void Renderer::InitializeMiscResources()
 {
-	HRESULT hr = loader->LoadTexture("random_texture.dds", mRandomTextureR, mRandomTextureSRV);
+	HRESULT hr = loader->LoadTexture(md3dDevice, "random_tex.dds", &mRandomTextureR, &mRandomTextureSRV);
 	if (FAILED(hr))
 	{
 		//whelp... I guess that there's no random texture :/
+		assert(false);
 	}
 
 	//set the depth biasing to prevent shadow acne
