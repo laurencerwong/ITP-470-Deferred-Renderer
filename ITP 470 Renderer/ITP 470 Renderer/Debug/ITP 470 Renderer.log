@@ -1,16 +1,108 @@
-﻿Build started 4/27/2014 5:17:52 PM.
-     1>Project "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\ITP 470 Renderer\ITP 470 Renderer.vcxproj" on node 2 (Build target(s)).
+﻿Build started 4/30/2014 11:01:02 PM.
+     1>Project "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\ITP 470 Renderer\ITP 470 Renderer.vcxproj" on node 2 (Rebuild target(s)).
      1>FxCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\depthPS.cso" /Od /Zi depthPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\depthPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\depthVS.cso" /Od /Zi depthVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\depthVS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\directional_lightingpassPS.cso" /Od /Zi directional_lightingpassPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\directional_lightingpassPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\directional_lightingpassVS.cso" /Od /Zi directional_lightingpassVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\directional_lightingpassVS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\colorPS.cso" /Od /Zi Effects\colorPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\colorPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\colorVS.cso" /Od /Zi Effects\colorVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\colorVS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\gbufferfill.cso" /Od /Zi gbufferfill.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\gbufferfill.cso
          C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\lightBlendPS.cso" /Od /Zi lightBlendPS.hlsl 
          compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\lightBlendPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\linearDepthVS.cso" /Od /Zi linearDepthVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\linearDepthVS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\omniDirShadowPS.cso" /Od /Zi omniDirShadowPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\omniDirShadowPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_5_0 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\point_lightingpassPS.cso" /Od /Zi point_lightingpassPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\point_lightingpassPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\point_lightingpassShadowPS.cso" /Od /Zi point_lightingpassShadowPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\point_lightingpassShadowPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\point_lightingpassVS.cso" /Od /Zi point_lightingpassVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\point_lightingpassVS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_5_0 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongPS.cso" /Od /Zi phongPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongPSShadowMap.cso" /Od /Zi phongPSShadowMap.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongPSShadowMap.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongVS.cso" /Od /Zi phongVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongVS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongVSShadowMap.cso" /Od /Zi phongVSShadowMap.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\phongVSShadowMap.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\quadDepthPS.cso" /Od /Zi quadDepthPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\quadDepthPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T ps_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\quadPS.cso" /Od /Zi quadPS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\quadPS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\quadVS.cso" /Od /Zi quadVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\quadVS.cso
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\fxc.exe /nologo /E"main" /T vs_4_1 /Fo "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\omniDirShadowVS.cso" /Od /Zi omniDirShadowVS.hlsl 
+         compilation object save succeeded; see C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\omniDirShadowVS.cso
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oi /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt BloomBuffer.cpp Camera.cpp CubeMap.cpp DDSTextureLoader\DDSTextureLoader.cpp FileReaderWriter.cpp FrankLunaCode\d3dApp.cpp FrankLunaCode\d3dUtil.cpp FrankLunaCode\GameTimer.cpp FrankLunaCode\MathHelper.cpp GBuffer.cpp InputManager.cpp LightAccumulationBuffer.cpp LightManager.cpp main.cpp DrawableObject.cpp MeshData.cpp Renderer.cpp SceneLoader.cpp ShaderManager.cpp ShadowMap.cpp TexturedQuad.cpp
+         TexturedQuad.cpp
+         ShadowMap.cpp
+         ShaderManager.cpp
+         SceneLoader.cpp
+     1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\sceneloader.cpp(212): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+         Renderer.cpp
+         MeshData.cpp
+         DrawableObject.cpp
+         main.cpp
+         LightManager.cpp
+         LightAccumulationBuffer.cpp
+         InputManager.cpp
+         GBuffer.cpp
+         MathHelper.cpp
+         GameTimer.cpp
+         d3dUtil.cpp
+         d3dApp.cpp
+         FileReaderWriter.cpp
+         DDSTextureLoader.cpp
+         CubeMap.cpp
+         Camera.cpp
+     1>c:\users\laurence\documents\school\itp 470\itp 470 renderer\itp 470 renderer\camera.cpp(67): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+         Generating Code...
+         Compiling...
+         BloomBuffer.cpp
+         Generating Code...
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /D _UNICODE /D UNICODE /l"0x0409" /nologo /fo"Debug\ITP 470 Renderer.res" "ITP 470 Renderer.rc" 
        Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.exe" /INCREMENTAL /NOLOGO assimp.lib d3d11.lib D3DCompiler.lib Effects11d.lib dxgi.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.lib" /MACHINE:X86 "Debug\ITP 470 Renderer.res"
+         Debug\BloomBuffer.obj
+         Debug\Camera.obj
+         Debug\CubeMap.obj
+         Debug\DDSTextureLoader.obj
+         Debug\FileReaderWriter.obj
+         Debug\d3dApp.obj
+         Debug\d3dUtil.obj
+         Debug\GameTimer.obj
+         Debug\MathHelper.obj
+         Debug\GBuffer.obj
+         Debug\InputManager.obj
+         Debug\LightAccumulationBuffer.obj
+         Debug\LightManager.obj
+         Debug\main.obj
+         Debug\DrawableObject.obj
+         Debug\MeshData.obj
+         Debug\Renderer.obj
+         Debug\SceneLoader.obj
+         Debug\ShaderManager.obj
+         Debug\ShadowMap.obj
+         Debug\TexturedQuad.obj
          ITP 470 Renderer.vcxproj -> C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\ITP 470 Renderer.exe
        PostBuildEvent:
          xcopy /y /d "assimp/bin" "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\Debug\"
          :VCEnd
          0 File(s) copied
-     1>Done Building Project "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\ITP 470 Renderer\ITP 470 Renderer.vcxproj" (Build target(s)).
+     1>Done Building Project "C:\Users\Laurence\Documents\School\ITP 470\ITP 470 Renderer\ITP 470 Renderer\ITP 470 Renderer.vcxproj" (Rebuild target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.15
+Time Elapsed 00:00:13.91

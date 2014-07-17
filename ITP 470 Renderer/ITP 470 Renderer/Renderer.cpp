@@ -136,6 +136,16 @@ void Renderer::DrawDepth()
 
 void Renderer::FillGBuffer()
 {
+	//zbuffer prepass
+	shaderManager->SetPixelShader("none");
+	ID3D11RenderTargetView* renderTargets[1] = { 0 };
+	md3dImmediateContext->ClearDepthStencilView(mZPrepassDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	md3dImmediateContext->OMSetRenderTargets(1, renderTargets, mZPrepassDSV);
+	DrawDepth();
+
+	shaderManager->SetPixelShader("gbufferfill.cso");
+	shaderManager->SetVertexShader("phongVSShadowMap.cso");
+	gBuffer->BindBuffers(md3dImmediateContext, mDepthStencilView);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	md3dImmediateContext->Map(perFramePSDeferredFillBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	perFrameDeferredFillStruct*cbDeferred = (perFrameDeferredFillStruct*)mappedResource.pData;
@@ -144,6 +154,7 @@ void Renderer::FillGBuffer()
 	md3dImmediateContext->PSSetConstantBuffers(0, 1, &perFramePSDeferredFillBuffer);
 	ID3D11ShaderResourceView* psShaderResourceViews = { shadowMap->GetDepthMapResourceView() };
 	md3dImmediateContext->PSSetShaderResources(2, 1, &psShaderResourceViews);
+	md3dImmediateContext->PSSetShaderResources(3, 1, &mZPrepassSRV);
 	for (DrawableObject* object : loader->GetDrawableObjects())
 	{
 		shaderManager->SetVertexShader(object->GetVertexShader());
@@ -435,9 +446,6 @@ void Renderer::DrawScene()
 
 	DrawSceneToShadowMap(shadowMap);
 	//DrawDepthForPoint(lightManager->GetPointLights()[0].mPointLight);
-	gBuffer->BindBuffers(md3dImmediateContext, mDepthStencilView);
-	shaderManager->SetPixelShader("gbufferfill.cso");
-	shaderManager->SetVertexShader("phongVSShadowMap.cso");
 
 	//HHHHHAAAACKTACULAR
 	XMStoreFloat4x4(&mView, camera->GetViewMatrix());
@@ -615,6 +623,51 @@ void Renderer::InitializeMiscResources()
 	if (FAILED(hr))
 	{
 		//whelp... I guess that there's no random texture :/
+		assert(false);
+	}
+
+	ID3D11Texture2D *zPrepassTex;
+	D3D11_TEXTURE2D_DESC zPrepassTexDesc;
+	zPrepassTexDesc.Width = 800;
+	zPrepassTexDesc.Height = 600;
+	zPrepassTexDesc.MipLevels = 1;
+	zPrepassTexDesc.ArraySize = 1;
+	zPrepassTexDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	zPrepassTexDesc.SampleDesc.Count = 1;
+	zPrepassTexDesc.SampleDesc.Quality = 0;
+	zPrepassTexDesc.Usage = D3D11_USAGE_DEFAULT;
+	zPrepassTexDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
+	zPrepassTexDesc.CPUAccessFlags = 0;
+	zPrepassTexDesc.MiscFlags = 0;
+	hr = md3dDevice->CreateTexture2D(&zPrepassTexDesc, 0, &zPrepassTex);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC zPrepassDesc;
+	zPrepassDesc.Flags = 0;
+	zPrepassDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	zPrepassDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	zPrepassDesc.Texture2D.MipSlice = 0;
+	zPrepassDesc.Texture2DArray.ArraySize = 1;
+	zPrepassDesc.Texture2DArray.FirstArraySlice = 0;
+	zPrepassDesc.Texture2DArray.MipSlice = 0;
+	hr = md3dDevice->CreateDepthStencilView(zPrepassTex, &zPrepassDesc, &mZPrepassDSV);
+	if (FAILED(hr))
+	{
+		assert(false);
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC zPrepassSRVDesc;
+	ZeroMemory(&zPrepassSRVDesc, sizeof(zPrepassSRVDesc));
+	zPrepassSRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	zPrepassSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	zPrepassSRVDesc.Texture2D.MostDetailedMip = 0;
+	zPrepassSRVDesc.Texture2D.MipLevels = 1;
+	hr = md3dDevice->CreateShaderResourceView(zPrepassTex, &zPrepassSRVDesc, &mZPrepassSRV);
+	if (FAILED(hr))
+	{
 		assert(false);
 	}
 

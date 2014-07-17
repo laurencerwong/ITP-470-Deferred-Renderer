@@ -1,6 +1,7 @@
 Texture2D gDiffuseTex	: register(t0);
 Texture2D gNormalTex	: register(t1);
 Texture2D gShadowMap	: register(t2);
+Texture2D gZPrepassTex	: register(t3);
 
 SamplerState linearTextureSampler
 {
@@ -60,26 +61,29 @@ struct PS_IN
 
 PS_OUT main(PS_IN input) 
 {
-	PS_OUT output;
-	output.diffuse = gDiffuseTex.Sample(linearTextureSampler, input.tex);
-	
-	//normal map calculations
-	float3 transTangent = normalize(input.tangent - dot(input.tangent, input.normal) * input.normal);
-	float3 bitangent = normalize(input.binormal);
-	float3x3 NTB = float3x3(transTangent, bitangent, input.normal);
-	output.normal.xyz = gNormalTex.Sample(linearTextureSampler, input.tex).rgb;
-	output.normal = 2.0f * output.normal - 1.0f;
-	output.normal.xyz = normalize(mul(output.normal.xyz, NTB));
+	PS_OUT output = (PS_OUT)0;
+	if (input.depthWorldView <= gZPrepassTex.Sample(linearTextureSampler, input.position.xy).r * 1000.0f)
+	{ 
+		output.diffuse = gDiffuseTex.Sample(linearTextureSampler, input.tex);
 
-	output.specular = gMaterial.mSpecular;
-	output.position = float4(input.posWorld, 1.0f);
+		//normal map calculations
+		float3 transTangent = normalize(input.tangent - dot(input.tangent, input.normal) * input.normal);
+			float3 bitangent = normalize(input.binormal);
+			float3x3 NTB = float3x3(transTangent, bitangent, input.normal);
+			output.normal.xyz = gNormalTex.Sample(linearTextureSampler, input.tex).rgb;
+		output.normal = 2.0f * output.normal - 1.0f;
+		output.normal.xyz = normalize(mul(output.normal.xyz, NTB));
 
-	output.depth = input.depthWorldView / gFarPlane.x;
+		output.specular = gMaterial.mSpecular;
+		output.position = float4(input.posWorld, 1.0f);
 
-	float depth = input.shadowTexCoord.z - 0.001;
-	float shadowFactor = gShadowMap.SampleCmpLevelZero(ShadowMapSampler, input.shadowTexCoord.xy, depth).r;
-	output.normal.w = shadowFactor; // storing whether or not the pixel is in shadow in the normal.w
-	//because I couldn't think of anywhere else to put it
+		output.depth = input.depthWorldView / gFarPlane.x;
 
+		float depth = input.shadowTexCoord.z - 0.001;
+		float shadowFactor = gShadowMap.SampleCmpLevelZero(ShadowMapSampler, input.shadowTexCoord.xy, depth).r;
+		output.normal.w = shadowFactor; // storing whether or not the pixel is in shadow in the normal.w
+		//because I couldn't think of anywhere else to put it
+
+	}
 	return output;
 }

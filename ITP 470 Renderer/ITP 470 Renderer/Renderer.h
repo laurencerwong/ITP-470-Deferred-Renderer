@@ -123,6 +123,10 @@ public:
 	ID3D11RasterizerState *mNoShadowAcneState;
 	ID3D11RasterizerState *mNoCulling;
 
+	//Z-Prepass Buffer
+	ID3D11DepthStencilView* mZPrepassDSV;
+	ID3D11ShaderResourceView* mZPrepassSRV;
+
 
 	//Random Texture Resources
 	ID3D11ShaderResourceView *mRandomTextureSRV;
