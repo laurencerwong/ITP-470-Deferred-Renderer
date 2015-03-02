@@ -31,7 +31,7 @@ void Camera::DoFirstPersonRotation(float dt)
 
 	XMStoreFloat3(&mDirection, XMVector3Rotate(XMLoadFloat3(&mDirection), XMQuaternionRotationAxis(XMVector3Cross(XMLoadFloat3(&mUp), XMLoadFloat3(&mDirection)), 6.28f * deltaY)));
 
-	//XMStoreFloat3(&mUp, XMVector3Rotate(XMLoadFloat3(&mUp), XMQuaternionRotationAxis(XMVector3Cross(XMLoadFloat3(&mUp), XMLoadFloat3(&mDirection)), 6.28f * deltaY)));
+	//XMStoreFloat3(&	, XMVector3Rotate(XMLoadFloat3(&mUp), XMQuaternionRotationAxis(XMVector3Cross(XMLoadFloat3(&mUp), XMLoadFloat3(&mDirection)), 6.28f * deltaY)));
 
 	XMStoreFloat3(&mTarget, XMLoadFloat3(&mDirection) + XMLoadFloat3(&mPosition));
 	mMouseCoordinates = XMFLOAT2(0, 0);
