@@ -5,3 +5,14 @@ ITP 470 Renderer/Debug/**
 *.pch
 *.suo
 *.sdf
+*.tlog
+*.blend*
+*.log
+*.pdb
+*.idb
+*.res
+*.aps
+*.rc
+*.nvuser
+*.res
+*.exe
